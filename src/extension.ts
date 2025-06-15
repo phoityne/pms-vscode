@@ -7,40 +7,47 @@ import * as fs from 'fs';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	console.log('[INFO] Start of Congratulations.');
     const outputChannel = vscode.window.createOutputChannel("PMS-VSCode");
     // outputChannel.show();
-    outputChannel.appendLine('Start of Congratulations.');
+    outputChannel.appendLine('[INFO] Start of Congratulations.');
+    outputChannel.appendLine(`[INFO] cwd is: ${process.cwd()}`);
 
     const folders = vscode.workspace.workspaceFolders;
-    let configPath = './pty-mcp-server.yaml';
-    let scriptPath = './pty-mcp-server.sh';
     let vscodeFolderPath = ''
 	if (folders && folders.length > 0) {
 		const workspaceUri = folders[0].uri;
 		vscodeFolderPath = path.join(workspaceUri.fsPath, '.vscode');
-        // process.chdir(vscodeFolderPath);
-		let configPathTmp = path.join(vscodeFolderPath, 'pty-mcp-server.yaml');
-        if (fs.existsSync(configPathTmp)) {
-          configPath = configPathTmp;
-        }
-		let scriptPathTmp = path.join(vscodeFolderPath, 'pty-mcp-server.sh');
-        if (fs.existsSync(scriptPathTmp)) {
-          scriptPath = scriptPathTmp;
-        }
 	}
-	
-    let commandToRun = 'pty-mcp-server';
+
+
+    let configPath = './pty-mcp-server.yaml'
+    let pathTmp = path.join(vscodeFolderPath, 'pty-mcp-server.yaml');
+    if (fs.existsSync(pathTmp)) {
+      configPath = pathTmp;
+    }
+    if (!fs.existsSync(configPath)) {
+      outputChannel.appendLine(`[ERROR] configPath not found.: ${configPath}, ${pathTmp}`);
+      outputChannel.appendLine('[ERROR] Congratulations end.');
+      return;
+    }
+
     let args = ['-y', configPath];
+    let commandToRun = 'pty-mcp-server';
+    let scriptPath = './pty-mcp-server.sh'
+    pathTmp = path.join(vscodeFolderPath, 'pty-mcp-server.sh');
+    if (fs.existsSync(pathTmp)) {
+      scriptPath = pathTmp;
+    }
     if (fs.existsSync(scriptPath)) {
         commandToRun = scriptPath;
         args = []
     }
 
-    outputChannel.appendLine(`cwd is: ${process.cwd()}`);
-    outputChannel.appendLine(`vscodeFolderPath is: ${vscodeFolderPath}`);
-	outputChannel.appendLine(`configPath is: ${configPath}`);
-	outputChannel.appendLine(`scriptPath is: ${scriptPath}`);
-	outputChannel.appendLine(`commandToRun is: ${commandToRun}`);
+    outputChannel.appendLine(`[INFO] vscodeFolderPath is: ${vscodeFolderPath}`);
+	outputChannel.appendLine(`[INFO] configPath is: ${configPath}`);
+	outputChannel.appendLine(`[INFO] scriptPath is: ${scriptPath}`);
+	outputChannel.appendLine(`[INFO] commandToRun is: ${commandToRun}`);
 
 	const didChangeEmitter = new vscode.EventEmitter<void>();
     context.subscriptions.push(vscode.lm.registerMcpServerDefinitionProvider('ptyMcpServerProvider', {
@@ -61,8 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }));
 
-	console.log('End of Congratulations.');
-
+	outputChannel.appendLine('[INFO] End of Congratulations.');
+	console.log('[INFO] End of Congratulations.');
 }
 
 // This method is called when your extension is deactivated
