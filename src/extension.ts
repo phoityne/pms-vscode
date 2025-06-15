@@ -7,24 +7,40 @@ import * as fs from 'fs';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Congratulations, your extension "pty-mcp-server" is now active!');
+    const outputChannel = vscode.window.createOutputChannel("PMS-VSCode");
+    // outputChannel.show();
+    outputChannel.appendLine('Start of Congratulations.');
 
     const folders = vscode.workspace.workspaceFolders;
-    let scriptPath = '';
+    let configPath = './pty-mcp-server.yaml';
+    let scriptPath = './pty-mcp-server.sh';
+    let vscodeFolderPath = ''
 	if (folders && folders.length > 0) {
 		const workspaceUri = folders[0].uri;
-		//process.chdir(workspaceUri.fsPath);
-		const vscodeFolderPath = path.join(workspaceUri.fsPath, '.vscode');
-		scriptPath = path.join(vscodeFolderPath, 'pty-mcp-server.sh');
+		vscodeFolderPath = path.join(workspaceUri.fsPath, '.vscode');
+        // process.chdir(vscodeFolderPath);
+		let configPathTmp = path.join(vscodeFolderPath, 'pty-mcp-server.yaml');
+        if (fs.existsSync(configPathTmp)) {
+          configPath = configPathTmp;
+        }
+		let scriptPathTmp = path.join(vscodeFolderPath, 'pty-mcp-server.sh');
+        if (fs.existsSync(scriptPathTmp)) {
+          scriptPath = scriptPathTmp;
+        }
 	}
 	
     let commandToRun = 'pty-mcp-server';
+    let args = ['-y', configPath];
     if (fs.existsSync(scriptPath)) {
         commandToRun = scriptPath;
+        args = []
     }
 
-	console.log(`scriptPath is: ${scriptPath}`);
-	console.log(`commandToRun is: ${commandToRun}`);
+    outputChannel.appendLine(`cwd is: ${process.cwd()}`);
+    outputChannel.appendLine(`vscodeFolderPath is: ${vscodeFolderPath}`);
+	outputChannel.appendLine(`configPath is: ${configPath}`);
+	outputChannel.appendLine(`scriptPath is: ${scriptPath}`);
+	outputChannel.appendLine(`commandToRun is: ${commandToRun}`);
 
 	const didChangeEmitter = new vscode.EventEmitter<void>();
     context.subscriptions.push(vscode.lm.registerMcpServerDefinitionProvider('ptyMcpServerProvider', {
@@ -34,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
             servers.push(new vscode.McpStdioServerDefinition(
                 'pty-mcp-server',
                 commandToRun,
-                [],  // args
+                args,
                 {}   // env
             ));
 
@@ -45,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }));
 
-	console.log('End of Congratulations');
+	console.log('End of Congratulations.');
 
 }
 

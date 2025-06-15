@@ -1,0 +1,13 @@
+.vscode/**
+out/**/*.map
+src/**
+.gitignore
+tsconfig.json
+tslint.json
+docs/**
+configs
+node_modules
+create_package.sh
+out/test/**
+test/**
+src/test/**
