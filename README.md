@@ -19,12 +19,39 @@ To start the server using Podman or Docker, refer to the following file:
 👉 [run.sh (Docker/Podman startup script)](https://github.com/phoityne/pty-mcp-server/blob/main/docker/run.sh)
 
 
-### Log Confirmation
+## Log Confirmation
 
 Setup information is displayed in the **Output** view of VSCode, as shown below.  
 ![console_output](./docs/console_output.png)
 
 Additionally, the server activity logs are written to files under the `logDir` specified in the configuration file.
+
+## `mcp.json` Configuration
+By default, the `pms-vscode` extension registers a single `pty-mcp-server` instance.  
+However, you can define and register additional MCP servers independently by creating a `.vscode/mcp.json` file.
+
+This allows you to run as many MCP servers as needed—each tailored for a specific purpose such as local Bash workflows or remote SSH connections.
+
+
+```json
+{
+  "servers": [
+    "bash-mcp-server": {
+      "type": "stdio",
+      "command": "pty-mcp-server",
+      "args": ["-y", "/path/to/bash-config.yaml"]
+    },
+    "ssh-mcp-server": {
+      "type": "stdio",
+      "command": "pty-mcp-server",
+      "args": ["-y", "/path/to/ssh-config.yaml"]
+    }
+  ]
+}
+```
+Each MCP server publishes its available tools based on a tools-list.json file located in the scriptsDir specified in its individual yaml configuration file.
+
+----
 
 # pty-mcp-server
 
