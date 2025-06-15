@@ -6,18 +6,15 @@
 
 ### Configuration YAML
 
-Create a configuration file named **`pty-mcp-server.yaml`** inside the `.vscode` folder of your project.
-
+Create a configuration file named **`pty-mcp-server.yaml`** inside the `.vscode` folder of your project.  
 Refer to the example configuration file below and adjust paths such as `logDir`, `scriptsDir`, and others according to your environment:  
 👉 [pty-mcp-server.yaml example](https://github.com/phoityne/pty-mcp-server/blob/main/configs/pty-mcp-server.yaml)
 
 
 ### Startup Shell File
 
-By default, the extension runs the `pty-mcp-server` command available in the system PATH to start the server.
-
-If a shell script named `pty-mcp-server.sh` exists in the `.vscode` folder of the project, that script is executed instead.
-
+By default, the extension runs the `pty-mcp-server` command available in the system PATH to start the server.  
+If a shell script named `pty-mcp-server.sh` exists in the `.vscode` folder of the project, that script is executed instead.  
 To start the server using Podman or Docker, refer to the following file:  
 👉 [run.sh (Docker/Podman startup script)](https://github.com/phoityne/pty-mcp-server/blob/main/docker/run.sh)
 
