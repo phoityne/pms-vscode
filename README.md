@@ -1,6 +1,6 @@
 # pms-vscode
 
-`pms-vscode` is a VS Code extension acting as a frontend for `pty-mcp-server`, a Haskell-based PTY-hosted MCP server.
+`pms-vscode` is a VS Code extension acting as a frontend for [`pty-mcp-server`](https://github.com/phoityne/pty-mcp-server), a Haskell-based PTY-hosted MCP server.
 
 ## Setup
 
@@ -38,7 +38,7 @@ Use responsibly, with full awareness and at your own risk.
 
 ----
 
-`pty-mcp-server` is a Haskell implementation of the MCP (Model Context Protocol),
+[`pty-mcp-server`](https://github.com/phoityne/pty-mcp-server) is a Haskell implementation of the MCP (Model Context Protocol),
 designed to enable AI agents to acquire and control PTY (pseudo-terminal) connections dynamically.
 
 Through MCP, AI can interact with external CLI-based tools in a structured, automated, and scriptable way,  
