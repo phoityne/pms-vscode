@@ -146,7 +146,7 @@ function genPtyMcpServerConfig(vscodeFolderPath: string): string {
 	return `\
 logDir : "${logDir}"
 logLevel : "Debug"
-scriptsDir: "${toolsDir}"
+toolsDir: "${toolsDir}"
 promptsDir: "${promptsDir}"
 resourcesDir: "${resourcesDir}"
 prompts:
