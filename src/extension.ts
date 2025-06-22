@@ -7,18 +7,18 @@ import * as fs from 'fs';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	console.log('[INFO] Start of Congratulations.');
+	  console.log('[INFO] Start of Congratulations.');
     const outputChannel = vscode.window.createOutputChannel("PMS-VSCode");
     // outputChannel.show();
     outputChannel.appendLine('[INFO] Start of Congratulations.');
     outputChannel.appendLine(`[INFO] cwd is: ${process.cwd()}`);
 
     const folders = vscode.workspace.workspaceFolders;
-    let vscodeFolderPath = ''
-	if (folders && folders.length > 0) {
-		const workspaceUri = folders[0].uri;
-		vscodeFolderPath = path.join(workspaceUri.fsPath, '.vscode');
-	}
+    let vscodeFolderPath = './.vscode'
+    if (folders && folders.length > 0) {
+      const workspaceUri = folders[0].uri;
+      vscodeFolderPath = path.join(workspaceUri.fsPath, '.vscode');
+    }
 
     initPtyMcpServer(vscodeFolderPath, outputChannel);
 
@@ -46,31 +46,31 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     outputChannel.appendLine(`[INFO] vscodeFolderPath is: ${vscodeFolderPath}`);
-	outputChannel.appendLine(`[INFO] configPath is: ${configPath}`);
-	outputChannel.appendLine(`[INFO] scriptPath is: ${scriptPath}`);
-	outputChannel.appendLine(`[INFO] commandToRun is: ${commandToRun}`);
+    outputChannel.appendLine(`[INFO] configPath is: ${configPath}`);
+    outputChannel.appendLine(`[INFO] scriptPath is: ${scriptPath}`);
+    outputChannel.appendLine(`[INFO] commandToRun is: ${commandToRun}`);
 
-	const didChangeEmitter = new vscode.EventEmitter<void>();
-    context.subscriptions.push(vscode.lm.registerMcpServerDefinitionProvider('ptyMcpServerProvider', {
-        onDidChangeMcpServerDefinitions: didChangeEmitter.event,
-        provideMcpServerDefinitions: async () => {
-            let servers: vscode.McpServerDefinition[] = [];
-            servers.push(new vscode.McpStdioServerDefinition(
-                'pty-mcp-server',
-                commandToRun,
-                args,
-                {}   // env
-            ));
+    const didChangeEmitter = new vscode.EventEmitter<void>();
+      context.subscriptions.push(vscode.lm.registerMcpServerDefinitionProvider('ptyMcpServerProvider', {
+          onDidChangeMcpServerDefinitions: didChangeEmitter.event,
+          provideMcpServerDefinitions: async () => {
+              let servers: vscode.McpServerDefinition[] = [];
+              servers.push(new vscode.McpStdioServerDefinition(
+                  'pty-mcp-server',
+                  commandToRun,
+                  args,
+                  {}   // env
+              ));
 
-            return servers;
-        },
-        resolveMcpServerDefinition: async (server: vscode.McpServerDefinition) => {
-            return server;
-        }
-    }));
+              return servers;
+          },
+          resolveMcpServerDefinition: async (server: vscode.McpServerDefinition) => {
+              return server;
+          }
+      }));
 
-	outputChannel.appendLine('[INFO] End of Congratulations.');
-	console.log('[INFO] End of Congratulations.');
+    outputChannel.appendLine('[INFO] End of Congratulations.');
+    console.log('[INFO] End of Congratulations.');
 }
 
 // This method is called when your extension is deactivated
@@ -78,53 +78,53 @@ export function deactivate() {}
 
 
 export function initPtyMcpServer(vscodeFolderPath: string, outputChannel: vscode.OutputChannel) {
-	// .vscode/
-	if (!fs.existsSync(vscodeFolderPath)) {
-		fs.mkdirSync(vscodeFolderPath);
-		outputChannel.appendLine(`[INFO] Created directory: ${vscodeFolderPath}`);
-	}
+    // .vscode/
+    if (!fs.existsSync(vscodeFolderPath)) {
+      fs.mkdirSync(vscodeFolderPath);
+      outputChannel.appendLine(`[INFO] Created directory: ${vscodeFolderPath}`);
+    }
 
-	// .vscode/pty-mcp-server/
-	const ptyRoot = path.join(vscodeFolderPath, 'pty-mcp-server');
-	if (!fs.existsSync(ptyRoot)) {
-		fs.mkdirSync(ptyRoot);
-		outputChannel.appendLine(`[INFO] Created directory: ${ptyRoot}`);
-	}
+    // .vscode/pty-mcp-server/
+    const ptyRoot = path.join(vscodeFolderPath, 'pty-mcp-server');
+    if (!fs.existsSync(ptyRoot)) {
+      fs.mkdirSync(ptyRoot);
+      outputChannel.appendLine(`[INFO] Created directory: ${ptyRoot}`);
+    }
 
-	// .vscode/pty-mcp-server/tools/
-	const toolsDir = path.join(ptyRoot, 'tools');
-	if (!fs.existsSync(toolsDir)) {
-		fs.mkdirSync(toolsDir);
-		outputChannel.appendLine(`[INFO] Created directory: ${toolsDir}`);
-	}
+    // .vscode/pty-mcp-server/tools/
+    const toolsDir = path.join(ptyRoot, 'tools');
+    if (!fs.existsSync(toolsDir)) {
+      fs.mkdirSync(toolsDir);
+      outputChannel.appendLine(`[INFO] Created directory: ${toolsDir}`);
+    }
 
-	// .vscode/pty-mcp-server/prompts/
-	const promptsDir = path.join(ptyRoot, 'prompts');
-	if (!fs.existsSync(promptsDir)) {
-		fs.mkdirSync(promptsDir);
-		outputChannel.appendLine(`[INFO] Created directory: ${promptsDir}`);
-	}
+    // .vscode/pty-mcp-server/prompts/
+    const promptsDir = path.join(ptyRoot, 'prompts');
+    if (!fs.existsSync(promptsDir)) {
+      fs.mkdirSync(promptsDir);
+      outputChannel.appendLine(`[INFO] Created directory: ${promptsDir}`);
+    }
 
-	// .vscode/pty-mcp-server/resources/
-	const resourcesDir = path.join(ptyRoot, 'resources');
-	if (!fs.existsSync(resourcesDir)) {
-		fs.mkdirSync(resourcesDir);
-		outputChannel.appendLine(`[INFO] Created directory: ${resourcesDir}`);
-	}
+    // .vscode/pty-mcp-server/resources/
+    const resourcesDir = path.join(ptyRoot, 'resources');
+    if (!fs.existsSync(resourcesDir)) {
+      fs.mkdirSync(resourcesDir);
+      outputChannel.appendLine(`[INFO] Created directory: ${resourcesDir}`);
+    }
 
-	// .vscode/pty-mcp-server/logs/
-	const logsDir = path.join(ptyRoot, 'logs');
-	if (!fs.existsSync(logsDir)) {
-		fs.mkdirSync(logsDir);
-		outputChannel.appendLine(`[INFO] Created directory: ${logsDir}`);
-	}
+    // .vscode/pty-mcp-server/logs/
+    const logsDir = path.join(ptyRoot, 'logs');
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir);
+      outputChannel.appendLine(`[INFO] Created directory: ${logsDir}`);
+    }
 
-	// .vscode/pty-mcp-server/tools/tools-list.json
-	const toolsListPath = path.join(toolsDir, 'tools-list.json');
-	if (!fs.existsSync(toolsListPath)) {
-		fs.writeFileSync(toolsListPath, defaultToolsListContent);
-		outputChannel.appendLine(`[INFO] Created file: ${toolsListPath}`);
-	}
+    // .vscode/pty-mcp-server/tools/tools-list.json
+    const toolsListPath = path.join(toolsDir, 'tools-list.json');
+    if (!fs.existsSync(toolsListPath)) {
+      fs.writeFileSync(toolsListPath, defaultToolsListContent);
+      outputChannel.appendLine(`[INFO] Created file: ${toolsListPath}`);
+    }
 
     // .vscode/pty-mcp-server.yaml
     const configPath = path.join(vscodeFolderPath, 'pty-mcp-server.yaml');
@@ -136,14 +136,14 @@ export function initPtyMcpServer(vscodeFolderPath: string, outputChannel: vscode
 }
 
 function genPtyMcpServerConfig(vscodeFolderPath: string): string {
-	const ptyRoot = path.join(vscodeFolderPath, 'pty-mcp-server');
+    const ptyRoot = path.join(vscodeFolderPath, 'pty-mcp-server');
 
-	const logDir = path.join(ptyRoot, 'logs');
-	const toolsDir = path.join(ptyRoot, 'tools');
-	const promptsDir = path.join(ptyRoot, 'prompts');
-	const resourcesDir = path.join(ptyRoot, 'resources');
+    const logDir = path.join(ptyRoot, 'logs');
+    const toolsDir = path.join(ptyRoot, 'tools');
+    const promptsDir = path.join(ptyRoot, 'prompts');
+    const resourcesDir = path.join(ptyRoot, 'resources');
 
-	return `\
+    return `\
 logDir : "${logDir}"
 logLevel : "Debug"
 toolsDir: "${toolsDir}"
