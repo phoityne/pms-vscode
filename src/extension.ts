@@ -13,8 +13,12 @@ export function activate(context: vscode.ExtensionContext) {
     outputChannel.appendLine('[INFO] Start of Congratulations.');
     outputChannel.appendLine(`[INFO] cwd is: ${process.cwd()}`);
 
+    const isWindows = process.platform === 'win32';
+    const scriptExt = isWindows ? '.bat' : '.sh';
+    const pathSep = isWindows ? '\\' : '/';
     const folders = vscode.workspace.workspaceFolders;
-    let vscodeFolderPath = './.vscode'
+
+    let vscodeFolderPath = '.' + pathSep + '.vscode'
     if (folders && folders.length > 0) {
       const workspaceUri = folders[0].uri;
       vscodeFolderPath = path.join(workspaceUri.fsPath, '.vscode');
@@ -22,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     initPtyMcpServer(vscodeFolderPath, outputChannel);
 
-    let configPath = './pty-mcp-server.yaml'
+    let configPath = '.' + pathSep + 'pty-mcp-server.yaml'
     let pathTmp = path.join(vscodeFolderPath, 'pty-mcp-server.yaml');
     if (fs.existsSync(pathTmp)) {
       configPath = pathTmp;
@@ -32,11 +36,14 @@ export function activate(context: vscode.ExtensionContext) {
       outputChannel.appendLine('[ERROR] Congratulations end.');
       return;
     }
+  
+    const scriptBaseName = 'pty-mcp-server';
+    const scriptFile = scriptBaseName + scriptExt;
 
     let args = ['-y', configPath];
     let commandToRun = 'pty-mcp-server';
-    let scriptPath = './pty-mcp-server.sh'
-    pathTmp = path.join(vscodeFolderPath, 'pty-mcp-server.sh');
+    let scriptPath = '.' + pathSep + scriptFile
+    pathTmp = path.join(vscodeFolderPath, scriptFile);
     if (fs.existsSync(pathTmp)) {
       scriptPath = pathTmp;
     }
@@ -45,6 +52,8 @@ export function activate(context: vscode.ExtensionContext) {
         args = []
     }
 
+    outputChannel.appendLine(`[INFO] isWindows is: ${isWindows}`);
+    outputChannel.appendLine(`[INFO] scriptFile is: ${scriptFile}`);
     outputChannel.appendLine(`[INFO] vscodeFolderPath is: ${vscodeFolderPath}`);
     outputChannel.appendLine(`[INFO] configPath is: ${configPath}`);
     outputChannel.appendLine(`[INFO] scriptPath is: ${scriptPath}`);
@@ -122,7 +131,9 @@ export function initPtyMcpServer(vscodeFolderPath: string, outputChannel: vscode
     // .vscode/pty-mcp-server/tools/tools-list.json
     const toolsListPath = path.join(toolsDir, 'tools-list.json');
     if (!fs.existsSync(toolsListPath)) {
-      fs.writeFileSync(toolsListPath, defaultToolsListContent);
+      const isWindows = process.platform === 'win32';
+      const content = isWindows ? winToolsListContent : defaultToolsListContent;
+      fs.writeFileSync(toolsListPath, content);
       outputChannel.appendLine(`[INFO] Created file: ${toolsListPath}`);
     }
 
@@ -144,17 +155,17 @@ function genPtyMcpServerConfig(vscodeFolderPath: string): string {
     const resourcesDir = path.join(ptyRoot, 'resources');
 
     return `\
-logDir : "${logDir}"
-logLevel : "Debug"
-toolsDir: "${toolsDir}"
-promptsDir: "${promptsDir}"
-resourcesDir: "${resourcesDir}"
+logDir : '${logDir}'
+logLevel : 'Debug'
+toolsDir: '${toolsDir}'
+promptsDir: '${promptsDir}'
+resourcesDir: '${resourcesDir}'
 prompts:
-  - ">"
-  - "]#"
-  - "]$"
-  - ")?"
-  - "password:"
+  - '> '
+  - ']#'
+  - ']$'
+  - ')?'
+  - 'password:'
 `;
 }
 
@@ -325,3 +336,54 @@ const defaultToolsListContent = `\
 
 `;
 
+
+const winToolsListContent = `\
+[
+  {
+    "name": "proc-spawn",
+    "description": "Spawns an external process using the specified arguments and enables interactive communication via standard input and output. Unlike PTY-based execution, this communicates directly with the process using the runProcess function without allocating a pseudo-terminal. Suitable for non-TUI, stdin/stdout-based interactive programs.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Name of the command to run."
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of arguments for the command."
+        }
+      },
+      "required": [
+        "command"
+      ]
+    }
+  },
+  {
+    "name": "proc-terminate",
+    "description": "Forcefully terminates a running process created via runProcess.",
+    "inputSchema": {}
+  },
+  {
+    "name": "proc-message",
+    "description": "Sends structured text-based instructions or commands to a subprocess started with runProcess. It provides a programmable interface for interacting with the process via standard input.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "df -k"
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  }
+
+]
+
+`;
