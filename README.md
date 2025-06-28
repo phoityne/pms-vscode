@@ -2,25 +2,45 @@
 
 `pms-vscode` is a VS Code extension acting as a frontend for [`pty-mcp-server`](https://github.com/phoityne/pty-mcp-server), a Haskell-based PTY-hosted MCP server.
 
-## Setup
+## Quick Start
 
-### Configuration YAML
+### 1. Install the VSCode Extension and Open the Project
 
-Create a configuration file named **`pty-mcp-server.yaml`** inside the `.vscode` folder of your project.  
-Refer to the example configuration file below and adjust paths such as `logDir`, `toolsDir`, and others according to your environment:  
-👉 [pty-mcp-server.yaml example](https://github.com/phoityne/pty-mcp-server/blob/main/configs/pty-mcp-server.yaml)
+1. When you install this VSCode extension and open your project, the necessary directories and files will be automatically created under the `.vscode` folder, as shown in the image below: 
+![image](./docs/01_tree.png)
+
+### 2. Start the `pty-mcp-server`
+
+1. Press `Ctrl+Shift+P` to open the Command Palette.
+2. Type `MCP` and select **MCP: List Servers**.
+![image](./docs/11_ctrl_shift_p.png)
+3. Choose `pty-mcp-server` from the list.
+![image](./docs/12_ctrl_shift_p.png)
+4. Click **Start Server**.
+![image](./docs/13_ctrl_shift_p.png)
+
+### 3. Add a Tool
+
+1. Edit the `tools/tools-list.json` file and add your custom tool. The file will automatically be reloaded and the tool will become available.
+![image](./docs/21_tools-list.png)
+2. Create a shell script file with the same name as the tool inside the `tools/` directory.  
+   Implement your logic using shell commands, and make sure to give the script executable permission.
+![image](./docs/22_tool.png)
+
+### 4. Add a Prompt
+
+1. Edit the `prompts/prompt-list.json` file and add your custom prompt. The file will be automatically reloaded and the new prompt will become available.
+![image](./docs/31_prompts-list.png)
+2. Create a Markdown file with the same name as the prompt. Write your prompt using natural language and embed parameters using Mustache-style placeholders (`{{param}}`).
+![image](./docs/32_prompts-md.png)
 
 
-### Startup Shell File
-
-By default, the extension runs the `pty-mcp-server` command available in the system PATH to start the server.  
-If a shell script named `pty-mcp-server.sh` exists in the `.vscode` folder of the project, that script is executed instead.  
-To start the server using Podman or Docker, refer to the following file:  
-👉 [run.sh (Docker/Podman startup script)](https://github.com/phoityne/pty-mcp-server/blob/main/docker/run.sh)
+### 5. Customize the pty-mcp-server Execution
+If you need to change how `pty-mcp-server` is executed (e.g. wrapper scripts or custom paths), create a `pty-mcp-server.sh` script in the .vscode folder and define the desired execution behavior.
+![image](./docs/41_pms_sh.png)
 
 
-## Log Confirmation
-
+### 6. View Logs
 Setup information is displayed in the **Output** view of VSCode, as shown below.  
 ![console_output](./docs/console_output.png)
 

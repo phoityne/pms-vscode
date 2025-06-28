@@ -144,6 +144,20 @@ export function initPtyMcpServer(vscodeFolderPath: string, outputChannel: vscode
         fs.writeFileSync(configPath, content);
         outputChannel.appendLine(`[INFO] Created file: ${configPath}`);
     }
+
+    // .vscode/pty-mcp-server/prompts/prompts-list.json
+    const promptsListPath = path.join(promptsDir, 'prompts-list.json');
+    if (!fs.existsSync(promptsListPath)) {
+      fs.writeFileSync(promptsListPath, promptsListContent);
+      outputChannel.appendLine(`[INFO] Created file: ${promptsListPath}`);
+    }
+
+    // .vscode/pty-mcp-server/prompts/build_web_service.md
+    const buildWebServicePromptPath = path.join(promptsDir, 'build_web_service.md');
+    if (!fs.existsSync(buildWebServicePromptPath)) {
+      fs.writeFileSync(buildWebServicePromptPath, webServicePromptContent);
+      outputChannel.appendLine(`[INFO] Created file: ${buildWebServicePromptPath}`);
+    }
 }
 
 function genPtyMcpServerConfig(vscodeFolderPath: string): string {
@@ -330,8 +344,51 @@ const defaultToolsListContent = `\
         "projectDir"
       ]
     }
+  },
+  {
+    "name": "proc-spawn",
+    "description": "Spawns an external process using the specified arguments and enables interactive communication via standard input and output. Unlike PTY-based execution, this communicates directly with the process using the runProcess function without allocating a pseudo-terminal. Suitable for non-TUI, stdin/stdout-based interactive programs.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Name of the command to run."
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of arguments for the command."
+        }
+      },
+      "required": [
+        "command"
+      ]
+    }
+  },
+  {
+    "name": "proc-terminate",
+    "description": "Forcefully terminates a running process created via runProcess.",
+    "inputSchema": {}
+  },
+  {
+    "name": "proc-message",
+    "description": "Sends structured text-based instructions or commands to a subprocess started with runProcess. It provides a programmable interface for interacting with the process via standard input.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "df -k"
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
   }
-
 ]
 
 `;
@@ -385,5 +442,52 @@ const winToolsListContent = `\
   }
 
 ]
+
+`;
+
+
+const promptsListContent = `\
+[
+  {
+    "name": "build_web_service",
+    "description": "Build a web service in a Linux environment with root privileges, using pty-bash and the specified port.",
+    "arguments": [
+      {
+        "name": "port",
+        "description": "Port number on which the web service must listen.",
+        "required": true
+      },
+      {
+        "name": "language",
+        "description": "Programming language to use for building the web service (e.g., Python, Node.js, Go).",
+        "required": true
+      }
+    ]
+  }
+]
+`;
+
+const webServicePromptContent = `\
+# AI Prompt: Build a Web Service on a Linux Server  
+*(Language: {{language}} / root / dnf / pty-bash / Command-by-Command via pty-message)*
+
+## Mission
+
+You are an AI agent responsible for building a web service inside a Linux environment.  
+You must follow user specifications using the **{{language}}** programming language.  
+You have full root privileges and access to a bash shell via pty-bash.
+
+---
+
+## System Environment
+
+- Shell: bash via pty-bash
+- Interface: pty-message (used to send commands)
+- Privilege: root
+- Base directory: /root/webapp
+- Package manager: dnf
+- Web server must listen on port: **{{port}}**
+- Network: available
+- File creation and editing: via shell commands (e.g. echo, cat, printf, etc.)
 
 `;
