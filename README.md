@@ -4,6 +4,12 @@
 
 ## Quick Start
 
+> **Prerequisite**  
+> Before following the steps below, make sure `pty-mcp-server` is installed according to the instructions here:
+>  - [podman/docker-installation](https://github.com/phoityne/pms-vscode/tree/main?tab=readme-ov-file#running-with-podman-or-docker)
+>  - [binary-installation](https://github.com/phoityne/pms-vscode/tree/main?tab=readme-ov-file#binary-installation)
+
+
 ### 1. Install the VSCode Extension and Open the Project
 
 1. When you install this VSCode extension and open your project, the necessary directories and files will be automatically created under the `.vscode` folder, as shown in the image below:   
