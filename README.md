@@ -27,19 +27,22 @@
 
 ### 3. Add a Tool
 
-1. Edit the `tools/tools-list.json` file and add your custom tool. The file will automatically be reloaded and the tool will become available.  
+1. Edit the `pty-mcp-server/tools/tools-list.json` file and add your custom tool. The file will automatically be reloaded and the tool will become available.  
 ![tools-list](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/21_tools-list.png)
-2. Create a shell script file with the same name as the tool inside the `tools/` directory.  
+2. Create a shell script file with the same name as the tool inside the `pty-mcp-server/tools/` directory.  
    Implement your logic using shell commands, and make sure to give the script executable permission.  
 ![tool](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/22_tool.png)
+3. In the AI chat, you can trigger tool completion by typing `#`, then selecting your tool from the list.
+![tool_exec](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/23_tool_exec.png)
 
 ### 4. Add a Prompt
 
-1. Edit the `prompts/prompt-list.json` file and add your custom prompt. The file will be automatically reloaded and the new prompt will become available.  
+1. Edit the `pty-mcp-server/prompts/prompt-list.json` file and add your custom prompt. The file will be automatically reloaded and the new prompt will become available.  
 ![prompts-list](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/31_prompts-list.png)
 2. Create a Markdown file with the same name as the prompt. Write your prompt using natural language and embed parameters using Mustache-style placeholders (`{{param}}`).  
 ![prompts-md](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/32_prompts-md.png)
-
+3. In the AI chat, you can trigger prompt completion by typing `/`, then selecting your prompt from the list.
+![prompts-exec](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/32_prompts-exec.png)
 
 ### 5. Customize the pty-mcp-server Execution
 If you need to change how `pty-mcp-server` is executed (e.g. wrapper scripts or custom paths), create a `pty-mcp-server.sh` script in the .vscode folder and define the desired execution behavior.  
