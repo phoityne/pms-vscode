@@ -41,8 +41,8 @@
 ![prompts-list](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/31_prompts-list.png)
 2. Create a Markdown file with the same name as the prompt. Write your prompt using natural language and embed parameters using Mustache-style placeholders (`{{param}}`).  
 ![prompts-md](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/32_prompts-md.png)
-3. In the AI chat, you can trigger prompt completion by typing `/`, then selecting your prompt from the list.
-![prompts-exec](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/32_prompts-exec.png)
+3. In the AI chat, you can trigger prompt completion by typing `/mcp`, then selecting your prompt from the list.
+![prompts-exec](https://raw.githubusercontent.com/phoityne/pms-vscode/main/docs/33_prompts-exec.png)
 
 ### 5. Customize the pty-mcp-server Execution
 If you need to change how `pty-mcp-server` is executed (e.g. wrapper scripts or custom paths), create a `pty-mcp-server.sh` script in the .vscode folder and define the desired execution behavior.  
