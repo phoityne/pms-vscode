@@ -64,14 +64,40 @@ All AI systems must remain strictly under human oversight and control.
 Use responsibly, with full awareness and at your own risk.  
 
 ----
+## 📘 Overview
 
-[`pty-mcp-server`](https://github.com/phoityne/pty-mcp-server) is a Haskell implementation of the MCP (Model Context Protocol),
-designed to enable AI agents to acquire and control PTY (pseudo-terminal) connections dynamically.
+**`pty-mcp-server`** is a Haskell implementation of an **MCP (Model Context Protocol) server** that enables AI agents to dynamically acquire and control **PTY (pseudo-terminal) sessions**, allowing interaction with real system environments through terminal-based interfaces.
 
-Through MCP, AI can interact with external CLI-based tools in a structured, automated, and scriptable way,  
-leveraging PTY interfaces to execute tasks in real environments.
+The server communicates exclusively via **standard input/output (stdio)**, ensuring simple and secure integration with MCP clients. Through this interface, AI agents can execute commands, retrieve system states, and apply configurations—just as a human operator would through a terminal.
 
-As an MCP server, `pty-mcp-server` operates strictly in **stdio** mode, communicating with MCP clients exclusively via standard input and output (stdio).
+---
+
+### 🎯 Purpose
+
+- Provide AI agents with **TTY-based control capabilities**  
+- Enable **automated configuration, inspection, and operation** using CLI tools  
+- Facilitate **AI-driven workflows for system development, diagnostics, and remote interaction**  
+- Allow AI agents to access and operate on **systems beyond the reach of static scripts or APIs**  
+- Support **Infrastructure as Code (IaC)** scenarios requiring **interactive or stateful terminal workflows**  
+- Assist in **system integration** across heterogeneous environments and legacy systems  
+- Empower **AI agents to support DevOps, IaC, and integration pipelines** by operating tools that require human-like terminal interaction  
+
+---
+
+### 🔧 Example Use Cases
+
+- **Dynamic execution of CLI tools** that require a PTY environment  
+  (e.g., embedded systems over serial or SSH-based terminals)  
+- **REPL automation**: driving GHCi or other CLI-based interactive interpreters  
+- **Interactive debugging** of Haskell applications or shell-based workflows  
+- **System diagnostics** through scripted or interactive bash sessions  
+- **Remote server management** using SSH  
+- **Hands-on system operation** where CLI behavior cannot be emulated via non-interactive scripting  
+- **Network device interaction**: configuring routers, switches, or appliances via console  
+- **AI-assisted IaC workflows**: executing Terraform, Ansible, or shell-based deploy scripts that involve prompts, state reconciliation, or real-time input  
+- **AI-driven system integration testing** across multiple environments and CLI tools  
+- **Legacy system automation** where GUI/API is unavailable and only terminal interaction is supported  
+
 
 ---
 
@@ -85,6 +111,9 @@ As an MCP server, `pty-mcp-server` operates strictly in **stdio** mode, communic
 - **`pty-connect`**  
   Launches any command through a PTY interface with optional arguments.  
   Great for general-purpose terminal automation.
+
+- **`pty-terminate`**  
+  Forcefully terminates an active pseudo-terminal (PTY) connection.
 
 - **`pty-message`**  
   Sends input to an existing PTY session (e.g., `df -k`) without needing full context of the current terminal state.  
@@ -110,6 +139,15 @@ As an MCP server, `pty-mcp-server` operates strictly in **stdio** mode, communic
   Launches a GHCi session within a specified project directory, loading a target Haskell file.  
   Supports argument passing and live code interaction.
 
+- **`proc-spawn`**  
+  Spawns an external process using the specified arguments and enables interactive communication via standard input and output. Unlike PTY-based execution, this communicates directly with the process using the runProcess function without allocating a pseudo-terminal. Suitable for non-TUI, stdin/stdout-based interactive programs.
+
+- **`proc-terminate`**  
+  Forcefully terminates a running process created via runProcess.
+
+- **`proc-message`**  
+  Sends structured text-based instructions or commands to a subprocess started with runProcess. It provides a programmable interface for interacting with the process via standard input.
+
 - **`Scriptable CLI Integration`**  
   The `pty-mcp-server` supports execution of shell scripts associated with registered tools defined in `tools-list.json`. Each tool must be registered by name, and a corresponding shell script (`.sh`) should exist in the configured `tools/` directory.
 
@@ -121,14 +159,9 @@ As an MCP server, `pty-mcp-server` operates strictly in **stdio** mode, communic
 
   This separation of tool definitions (`tools-list.json`) and implementation (`tools/your-tool.sh`) ensures clean decoupling and simplifies extensibility.
 
+> **Note:**  
+> Commands starting with `pty-` are not supported on Windows. These tools rely on POSIX-style pseudo terminals (PTY), which are not natively available in the Windows environment.
 
-### Example Use Cases
-
-- Performing interactive REPL operations (e.g., using GHCi or other CLI-based REPLs)
-- Interactive debugging of Haskell applications
-- System diagnostics through bash scripting
-- Remote server management via SSH
-- Dynamic execution of CLI tools in PTY environments
 
 ### Running with Podman or Docker
 
@@ -190,8 +223,6 @@ Below is an example of how to configure `mcp.json` to run the MCP server within 
 
 If you prefer to build it yourself, make sure the following requirements are met: 
 - GHC >= 9.12  
-- Linux environment with PTY support  
-- On Windows, use within a WSL (Windows Subsystem for Linux) environment
 
 You can install `pty-mcp-server` using `cabal`:
 
@@ -341,7 +372,7 @@ In contrast, the Docker container is running AlmaLinux 9.
 In this file, register bash-mcp-server as an MCP server.  
 Specify the command as pty-mcp-server and pass the configuration file config.yaml as an argument.
 2. Settings in config.yaml  
-The config.yaml file defines the log directory, the directory for scripts, and prompt detection patterns.  
+The config.yaml file defines the log directory, the directory for tools, and prompt detection patterns.  
 These settings establish the environment for the AI to interact with bash through the PTY.
 3. Place tools-list.json in the toolsDir  
 You need to place tools-list.json in the directory specified by toolsDir.  
@@ -391,4 +422,70 @@ Runtime values and control flow are displayed to help verify logic and observe i
 Integration with pty-msp-server enables automated runtime inspection for Haskell applications.
 
 ---
+
+## Architecture Guide (Software Architecture and Technical Details)
+
+### Architectural Strategy
+
+The architecture of the `pty-mcp-server` project is designed with medium-to-large scale systems in mind. Emphasis is placed on **modularity**, **maintainability**, and **scalability**, especially in environments involving multiple teams or organizations.
+
+To achieve these goals, the system is structured as a collection of well-separated packages, each responsible for a specific concern or domain. This package-oriented design provides several strategic benefits.
+
+The overall package structure adheres to the principles of **Onion Architecture**, reflecting a layered design that places the domain model at the core. Furthermore, the **internal module structure within each package** is also guided by a layered approach, maintaining clear separation between pure data definitions, domain services, and infrastructure concerns.
+
+### Role of `pty-mcp-server` as a Dependency Injector
+
+In addition to managing REPL communication, `pty-mcp-server` is **not merely an executable module**, but also acts as a **dependency injector** for the entire system.
+
+- It is capable of **referencing all relevant PMS packages**, including those that it depends on.
+- This allows it to **construct and wire together application components** across multiple packages and modules in a unified manner.
+- By centralizing this dependency resolution, `pty-mcp-server` provides a single point of control over **cross-cutting dependencies**, improving visibility and control over the system architecture.
+
+As a result, inter-package and inter-module dependencies can be **centrally coordinated and managed**, which promotes better encapsulation, reusability, and testability throughout the system.
+
+### Dependencies
+
+This package depends on the following packages:  
+- [`pms-ui-request`](https://github.com/phoityne/pms-ui-request)
+- [`pms-ui-response`](https://github.com/phoityne/pms-ui-response)
+- [`pms-ui-notification`](https://github.com/phoityne/pms-ui-notification)
+- [`pms-infrastructure`](https://github.com/phoityne/pms-infrastructure)
+- [`pms-infra-cmdrun`](https://github.com/phoityne/pms-infra-cmdrun)
+- [`pms-infra-procspawn`](https://github.com/phoityne/pms-infra-procspawn)
+- [`pms-infra-watch`](https://github.com/phoityne/pms-infra-watch)
+- [`pms-application-service`](https://github.com/phoityne/pms-application-service)
+- [`pms-domain-service`](https://github.com/phoityne/pms-domain-service)
+- [`pms-domain-model`](https://github.com/phoityne/pms-domain-model)
+
+### Rationale for Package Separation
+
+- **Clear Interface Definition**  
+  Each package exposes only its minimal, well-defined public API. This enforces clean module boundaries and reduces unintended dependencies between components.
+
+- **Team and Vendor Ownership**  
+  In larger projects, different teams or external vendors can own specific packages. Clear separation ensures well-defined responsibilities and supports collaborative development across organizational boundaries.
+
+- **Repository and Release Independence**  
+  Packages can be split into separate repositories and versioned independently. This allows for modular development and flexible release workflows, reducing build times and simplifying integration.
+
+- **Improved Maintainability and Extensibility**  
+  By isolating concerns, the impact of code changes is limited to relevant modules. This minimizes regressions and facilitates safe, incremental improvements over time.
+
+### Intended Use Cases
+
+- Medium-to-large scale enterprise systems involving multiple developers or teams  
+- Modular systems with independent development and release cycles for components  
+- Projects that require long-term maintainability, extensibility, and isolation of concerns
+
+This architecture follows a layered and modular approach. Domain models, domain services, application logic, and infrastructure concerns are each encapsulated in their own package, enabling clean composition while preserving separation of responsibilities.
+
+
+### Deployment Diagram
+![Deployment Diagram](https://raw.githubusercontent.com/phoityne/pty-mcp-server/main/docs/01-1.png)
+
+### Package Structure
+![Package Structure](https://raw.githubusercontent.com/phoityne/pty-mcp-server/main/docs/01-2.png)
+
+----
+
 
