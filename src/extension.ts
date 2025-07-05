@@ -167,7 +167,7 @@ export function initPtyMcpServer(vscodeFolderPath: string, outputChannel: vscode
     }
 
     // .vscode/pty-mcp-server/resources/build_web_service.md
-    const helloResourcePath = path.join(resourcesDir, 'build_web_service.md');
+    const helloResourcePath = path.join(resourcesDir, 'pms_hello.md');
     if (!fs.existsSync(helloResourcePath)) {
       fs.writeFileSync(helloResourcePath, helloResourceContent);
       outputChannel.appendLine(`[INFO] Created file: ${helloResourcePath}`);
