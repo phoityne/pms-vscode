@@ -158,6 +158,21 @@ export function initPtyMcpServer(vscodeFolderPath: string, outputChannel: vscode
       fs.writeFileSync(buildWebServicePromptPath, webServicePromptContent);
       outputChannel.appendLine(`[INFO] Created file: ${buildWebServicePromptPath}`);
     }
+
+    // .vscode/pty-mcp-server/resources/resources-list.json
+    const resourcesListPath = path.join(resourcesDir, 'resources-list.json');
+    if (!fs.existsSync(resourcesListPath)) {
+      fs.writeFileSync(resourcesListPath, resourcesListContent);
+      outputChannel.appendLine(`[INFO] Created file: ${resourcesListPath}`);
+    }
+
+    // .vscode/pty-mcp-server/resources/build_web_service.md
+    const helloResourcePath = path.join(resourcesDir, 'build_web_service.md');
+    if (!fs.existsSync(helloResourcePath)) {
+      fs.writeFileSync(helloResourcePath, helloResourceContent);
+      outputChannel.appendLine(`[INFO] Created file: ${helloResourcePath}`);
+    }
+
 }
 
 function genPtyMcpServerConfig(vscodeFolderPath: string): string {
@@ -175,12 +190,15 @@ toolsDir: '${toolsDir}'
 promptsDir: '${promptsDir}'
 resourcesDir: '${resourcesDir}'
 prompts:
-  - '> '
+  - '>>>'
   - ']#'
   - ']$'
   - ')?'
+  - 'Password:'
   - 'password:'
+  - 'ghci>'
 `;
+
 }
 
 const defaultToolsListContent = `\
@@ -262,6 +280,26 @@ const defaultToolsListContent = `\
             "type": "string"
           },
           "description": "Arguments to be passed to the SSH command, such as user, host, and optional flags."
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  },
+
+  {
+    "name": "pty-telnet",
+    "description": "Launches the telnet command within a pseudo-terminal (PTY) session. This allows interactive communication with a remote Telnet server, enabling the AI to respond to prompts such as 'login:' or 'Password:' just like a human user. The PTY environment ensures that the terminal behaves like a real TTY device, which is required for many Telnet servers.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Arguments to be passed to the telnet command, such as user, host, and optional flags."
         }
       },
       "required": [
@@ -388,6 +426,107 @@ const defaultToolsListContent = `\
         "arguments"
       ]
     }
+  },
+
+  {
+    "name": "socket-open",
+    "description": "This tool initiates a socket connection to the specified host and port.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The hostname or IP address to connect to (e.g., '127.0.0.1' or 'localhost')."
+        },
+        "port": {
+          "type": "string",
+          "description": "The port number to connect to, provided as a string (e.g., '5000')."
+        }
+      },
+      "required": [
+        "host",
+        "port"
+      ]
+    }
+  },
+  {
+    "name": "socket-close",
+    "description": "This tool close active socket connection that was previously established using the 'socket-opne' tool.",
+    "inputSchema": {}
+  },
+  {
+    "name": "socket-read",
+    "description": "Reads the specified number of bytes from the socket. The 'size' parameter indicates how many bytes to read.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "integer",
+          "description": "The number of bytes to read from the socket"
+        }
+      },
+      "required": [
+        "size"
+      ]
+    }
+  },
+  {
+    "name": "socket-write",
+    "description": "Write a sequence of bytes to the socket",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "description": "An array of byte values (integers between 0 and 255) to send"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  {
+    "name": "socket-message",
+    "description": "This tool sends a message over the active socket connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "The message content to be sent over the socket connection."
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  },
+  {
+    "name": "socket-telnet",
+    "description": "A simple Telnet-like communication tool over raw TCP sockets. This tool connects to a specified host and port, sends and receives data, and removes any Telnet IAC (Interpret As Command) sequences from the communication stream. Note: This is a simplified Telnet implementation and does not support full Telnet protocol features.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The hostname or IP address to connect to (e.g., '127.0.0.1' or 'localhost')."
+        },
+        "port": {
+          "type": "string",
+          "description": "The port number to connect to, provided as a string (e.g., '5000')."
+        }
+      },
+      "required": [
+        "host",
+        "port"
+      ]
+    }
   }
 ]
 
@@ -437,6 +576,149 @@ const winToolsListContent = `\
       },
       "required": [
         "arguments"
+      ]
+    }
+  },
+  {
+    "name": "proc-cmd",
+    "description": "The proc-cmd tool launches the Windows Command Prompt (cmd.exe) as a subprocess. It allows the AI to interact with the standard Windows shell environment, enabling execution of batch commands, file operations, and system configuration tasks in a familiar terminal interface.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+      },
+      "required": [
+      ]
+    }
+  },
+  {
+    "name": "proc-ps",
+    "description": "proc-ps launches the Windows PowerShell (powershell.exe) as a subprocess. It provides an interactive command-line environment where the AI can execute PowerShell commands, scripts, and system administration tasks. The shell is started with default options to keep it open and ready for further input.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+      },
+      "required": [
+      ]
+    }
+  },
+
+  {
+    "name": "proc-ssh",
+    "description": "proc-ssh launches an SSH client (ssh) as a subprocess using runProcess. It enables the AI to initiate remote connections to other systems via the Secure Shell protocol. The tool can be used to execute remote commands, access remote shells, or tunnel services over SSH. The required arguments field allows specifying the target user, host, and any SSH options (e.g., -p, -i, -L).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Arguments to be passed to the SSH command, such as user, host, and optional flags."
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  },
+
+  {
+    "name": "socket-open",
+    "description": "This tool initiates a socket connection to the specified host and port.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The hostname or IP address to connect to (e.g., '127.0.0.1' or 'localhost')."
+        },
+        "port": {
+          "type": "string",
+          "description": "The port number to connect to, provided as a string (e.g., '5000')."
+        }
+      },
+      "required": [
+        "host",
+        "port"
+      ]
+    }
+  },
+  {
+    "name": "socket-close",
+    "description": "This tool close active socket connection that was previously established using the 'socket-opne' tool.",
+    "inputSchema": {}
+  },
+  {
+    "name": "socket-read",
+    "description": "Reads the specified number of bytes from the socket. The 'size' parameter indicates how many bytes to read.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "integer",
+          "description": "The number of bytes to read from the socket"
+        }
+      },
+      "required": [
+        "size"
+      ]
+    }
+  },
+  {
+    "name": "socket-write",
+    "description": "Write a sequence of bytes to the socket",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "description": "An array of byte values (integers between 0 and 255) to send"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  {
+    "name": "socket-message",
+    "description": "This tool sends a message over the active socket connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "The message content to be sent over the socket connection."
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  },
+  {
+    "name": "socket-telnet",
+    "description": "A simple Telnet-like communication tool over raw TCP sockets. This tool connects to a specified host and port, sends and receives data, and removes any Telnet IAC (Interpret As Command) sequences from the communication stream. Note: This is a simplified Telnet implementation and does not support full Telnet protocol features.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The hostname or IP address to connect to (e.g., '127.0.0.1' or 'localhost')."
+        },
+        "port": {
+          "type": "string",
+          "description": "The port number to connect to, provided as a string (e.g., '5000')."
+        }
+      },
+      "required": [
+        "host",
+        "port"
       ]
     }
   }
@@ -491,3 +773,22 @@ You have full root privileges and access to a bash shell via pty-bash.
 - File creation and editing: via shell commands (e.g. echo, cat, printf, etc.)
 
 `;
+
+const resourcesListContent = `\
+[
+  {
+    "name": "pms_hello",
+    "uri": "pms_hello.md",
+    "description": "hello world from pty-mcp-server.",
+    "mimeType":"text/markdown"
+  }
+]
+
+`;
+
+
+const helloResourceContent = `\
+# hello world from pty-mcp-server.
+
+`;
+

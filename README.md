@@ -8,6 +8,7 @@
 > Before following the steps below, make sure `pty-mcp-server` is installed according to the instructions here:
 >  - [podman/docker-installation](https://github.com/phoityne/pms-vscode/tree/main?tab=readme-ov-file#running-with-podman-or-docker)
 >  - [binary-installation](https://github.com/phoityne/pms-vscode/tree/main?tab=readme-ov-file#binary-installation)
+>  - [Installation via .dxt Package](https://github.com/phoityne/pms-vscode/tree/main?tab=readme-ov-file#installation-via-dxt-package)
 
 
 ### 1. Install the VSCode Extension and Open the Project
@@ -138,35 +139,32 @@ The server communicates exclusively via **standard input/output (stdio)**, ensur
 
 #### Available Tools
 - **`pty-connect`**  
-  Launches any command through a PTY interface with optional arguments.  
-  Great for general-purpose terminal automation.
+  Runs a command via a pseudo-terminal (pty) to interact with external tools or services, with optional arguments.
 
 - **`pty-terminate`**  
   Forcefully terminates an active pseudo-terminal (PTY) connection.
 
 - **`pty-message`**  
-  Sends input to an existing PTY session (e.g., `df -k`) without needing full context of the current terminal state.  
-  Abstracts interaction in a programmable way.
+  pms-messages is a tool for sending structured instructions or commands to a running PTY session. It abstracts direct terminal input, allowing the LLM (MCP client) to interact with the PTY process in a controlled and programmable way.
 
 - **`pty-bash`**  
-  Starts an interactive Bash shell (`/bin/bash -i -l`) in a pseudo-terminal.  
-  Empowers AI to execute shell commands like a real user.
+  pty-bash is a tool that launches a bash shell in a pseudo terminal (PTY). It allows the LLM (MCP client) to interact with a real Linux shell in an interactive terminal (PTY). This enables AI to run system commands, collect information, and handle prompts or TUI-based tools as if operated by a human, making it effective for dynamic Linux-based automation and diagnostics.
 
 - **`pty-ssh`**  
-  Opens a remote SSH session via PTY, enabling access to remote systems.  
-  Accepts user/host and SSH flags as arguments.
+  Establishes an SSH session in a pseudo-terminal with the specified arguments, allowing interaction with remote systems.
+
+- **`pty-telnet`**  
+  Launches the telnet command within a pseudo-terminal (PTY) session. This allows interactive communication with a remote Telnet server, enabling the AI to respond to prompts such as 'login:' or 'Password:' just like a human user. The PTY environment ensures that the terminal behaves like a real TTY device, which is required for many Telnet servers.
 
 - **`pty-cabal`**  
   Launches a cabal repl session within a specified project directory, loading a target Haskell file.  
   Supports argument passing and live code interaction.
 
 - **`pty-stack`**  
-  Launches a stack repl session within a specified project directory, loading a target Haskell file.  
-  Supports argument passing and live code interaction.
+  Launches a stack repl session in a pseudo-terminal using the specified project directory, main source file, and arguments.
 
 - **`pty-ghci`**  
-  Launches a GHCi session within a specified project directory, loading a target Haskell file.  
-  Supports argument passing and live code interaction.
+  Launches a GHCi session in a pseudo-terminal using the specified project directory, main source file, and arguments.
 
 - **`proc-spawn`**  
   Spawns an external process using the specified arguments and enables interactive communication via standard input and output. Unlike PTY-based execution, this communicates directly with the process using the runProcess function without allocating a pseudo-terminal. Suitable for non-TUI, stdin/stdout-based interactive programs.
@@ -176,6 +174,33 @@ The server communicates exclusively via **standard input/output (stdio)**, ensur
 
 - **`proc-message`**  
   Sends structured text-based instructions or commands to a subprocess started with runProcess. It provides a programmable interface for interacting with the process via standard input.
+
+- **`proc-cmd`**  
+  The `proc-cmd` tool launches the Windows Command Prompt (`cmd.exe`) as a subprocess. It allows the AI to interact with the standard Windows shell environment, enabling execution of batch commands, file operations, and system configuration tasks in a familiar terminal interface.
+
+- **`proc-ps`**  
+  `proc-ps` launches the Windows PowerShell (`powershell.exe`) as a subprocess. It provides an interactive command-line environment where the AI can execute PowerShell commands, scripts, and system administration tasks. The shell is started with default options to keep it open and ready for further input.
+
+- **`proc-ssh`**  
+  `proc-ssh` launches an SSH client (`ssh`) as a subprocess using `runProcess`. It enables the AI to initiate remote connections to other systems via the Secure Shell protocol. The tool can be used to execute remote commands, access remote shells, or tunnel services over SSH. The required `arguments` field allows specifying the target user, host, and any SSH options (e.g., `-p`, `-i`, `-L`).
+
+- **`socket-open`**  
+  This tool initiates a socket connection to the specified host and port.
+
+- **`socket-close`**  
+  This tool close active socket connection that was previously established using the 'socket-opne' tool.
+
+- **`socket-read`**  
+  Reads the specified number of bytes from the socket. The 'size' parameter indicates how many bytes to read.
+
+- **`socket-write`**  
+  Write a sequence of bytes to the socket
+
+- **`socket-message`**  
+  This tool sends a specified string to the active socket connection, then waits for a recognizable prompt from the remote side. Upon detecting the prompt, it captures and returns all output received prior to it.
+
+- **`socket-telnet`**  
+  A simple Telnet-like communication tool over raw TCP sockets. This tool connects to a specified host and port, sends and receives data, and removes any Telnet IAC (Interpret As Command) sequences from the communication stream. Note: This is a simplified Telnet implementation and does not support full Telnet protocol features.
 
 - **`Scriptable CLI Integration`**  
   The `pty-mcp-server` supports execution of shell scripts associated with registered tools defined in `tools-list.json`. Each tool must be registered by name, and a corresponding shell script (`.sh`) should exist in the configured `tools/` directory.
@@ -190,7 +215,6 @@ The server communicates exclusively via **standard input/output (stdio)**, ensur
 
 > **Note:**  
 > Commands starting with `pty-` are not supported on Windows. These tools rely on POSIX-style pseudo terminals (PTY), which are not natively available in the Windows environment.
-
 
 ### Running with Podman or Docker
 
@@ -258,6 +282,16 @@ You can install `pty-mcp-server` using `cabal`:
 ```bash
 $ cabal install pty-mcp-server
 ```
+
+### Installation via `.dxt` Package
+
+You can also set up the tool using a pre-packaged `.dxt` file.  
+This method is suitable for quick installation into Claude Code or for manual setup via extraction.
+
+> 🛠️ The `.dxt` package distribution is currently **in preparation**,  
+> but you can check the latest status and download links at:  
+> [https://github.com/phoityne/pms-dxt](https://github.com/phoityne/pms-dxt)
+
 
 ### Binary Execution
 

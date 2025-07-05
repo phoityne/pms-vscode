@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.4]
+
+- Support resources list.
+
+
 ## [0.0.3]
 
 - Support windows.
