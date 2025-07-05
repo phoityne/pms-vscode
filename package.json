@@ -1,7 +1,7 @@
 {
   "name": "pms-vscode",
-  "displayName": "PTY MCP Server — Integrated by Haskell",
-  "description": "Developed in Haskell, this extension integrates the PTY MCP Server with VSCode. It was born from experiments combining haskell-debug-adapter with AI-based command orchestration, aiming to explore new debugging and workflow models.",
+  "displayName": "PTY MCP Server Integration for VSCode",
+  "description": "A VSCode extension integrating with the Haskell-based PTY MCP Server, enabling AI-driven orchestration of terminal interactions via the Model Completion Protocol (MCP). It is designed to support Infrastructure as Code (IaC) workflows that automate configuration and management of both cloud resources and on-premises hardware and network devices.",
   "version": "0.0.4",
   "publisher": "phoityne",
   "author": {

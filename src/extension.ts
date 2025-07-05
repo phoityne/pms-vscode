@@ -229,7 +229,7 @@ const defaultToolsListContent = `\
   {
     "name": "pty-terminate",
     "description": "Forcefully terminates an active pseudo-terminal (PTY) connection.",
-    "inputSchema": {}
+    "inputSchema": {"type": "object"}
   },
   {
     "name": "pty-message",
@@ -409,7 +409,7 @@ const defaultToolsListContent = `\
   {
     "name": "proc-terminate",
     "description": "Forcefully terminates a running process created via runProcess.",
-    "inputSchema": {}
+    "inputSchema": {"type": "object"}
   },
   {
     "name": "proc-message",
@@ -452,7 +452,7 @@ const defaultToolsListContent = `\
   {
     "name": "socket-close",
     "description": "This tool close active socket connection that was previously established using the 'socket-opne' tool.",
-    "inputSchema": {}
+    "inputSchema": {"type": "object"}
   },
   {
     "name": "socket-read",
@@ -561,7 +561,7 @@ const winToolsListContent = `\
   {
     "name": "proc-terminate",
     "description": "Forcefully terminates a running process created via runProcess.",
-    "inputSchema": {}
+    "inputSchema": {"type": "object"}
   },
   {
     "name": "proc-message",
@@ -646,7 +646,7 @@ const winToolsListContent = `\
   {
     "name": "socket-close",
     "description": "This tool close active socket connection that was previously established using the 'socket-opne' tool.",
-    "inputSchema": {}
+    "inputSchema": {"type": "object"}
   },
   {
     "name": "socket-read",
