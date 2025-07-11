@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.5]
+
+- Support serial tool.
+
+
 ## [0.0.4]
 
 - Support resources list.
