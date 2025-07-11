@@ -1,7 +1,7 @@
 {
   "name": "pms-vscode",
   "displayName": "PTY MCP Server Integration for VSCode",
-  "description": "A VSCode extension integrating with the Haskell-based PTY MCP Server, enabling AI-driven orchestration of terminal interactions via the Model Completion Protocol (MCP). It is designed to support Infrastructure as Code (IaC) workflows that automate configuration and management of both cloud resources and on-premises hardware and network devices.",
+  "description": "A VSCode extension integrating with the Haskell-based PTY MCP Server, enabling AI-driven terminal orchestration via the Model Completion Protocol (MCP). Designed to support IaC workflows for automating both cloud and on-premises infrastructure, including network and hardware devices.",
   "version": "0.0.4",
   "publisher": "phoityne",
   "author": {

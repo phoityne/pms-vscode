@@ -166,7 +166,14 @@ export function initPtyMcpServer(vscodeFolderPath: string, outputChannel: vscode
       outputChannel.appendLine(`[INFO] Created file: ${resourcesListPath}`);
     }
 
-    // .vscode/pty-mcp-server/resources/build_web_service.md
+    // .vscode/pty-mcp-server/resources/resources-template-list.json
+    const resourcesTplListPath = path.join(resourcesDir, 'resources-templates-list.json');
+    if (!fs.existsSync(resourcesTplListPath)) {
+      fs.writeFileSync(resourcesTplListPath, resourcesTplListContent);
+      outputChannel.appendLine(`[INFO] Created file: ${resourcesTplListPath}`);
+    }
+
+    // .vscode/pty-mcp-server/resources/pms_hello.md
     const helloResourcePath = path.join(resourcesDir, 'pms_hello.md');
     if (!fs.existsSync(helloResourcePath)) {
       fs.writeFileSync(helloResourcePath, helloResourceContent);
@@ -786,6 +793,13 @@ const resourcesListContent = `\
 
 `;
 
+
+const resourcesTplListContent = `\
+[
+ 
+]
+
+`;
 
 const helloResourceContent = `\
 # hello world from pty-mcp-server.
