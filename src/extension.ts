@@ -204,6 +204,45 @@ prompts:
   - 'Password:'
   - 'password:'
   - 'ghci>'
+
+
+# not yet implemented parameters.
+environment:
+  ProgramData: "C:\\\\ProgramData"
+  SystemRoot: "C:\\\\Windows"
+timeoutMicrosec: 1000000
+invalidChars:
+  - '&&'
+  - '||'
+  - '|'
+  - '..'
+invalidWinCmds:
+  - del
+  - erase
+  - rd
+  - rmdir
+  - format
+  - shutdown
+  - restart
+  - taskkill
+invalidLinuxCmds:
+  - rm
+  - mv
+  - dd
+  - chmod
+  - chown
+  - shutdown
+  - reboot
+  - kill
+  - nc
+serial:
+  device: "COM3"
+  commSpeed: 9600
+  bitsPerWord: 8
+  stopb: 1
+  parity: "NoParity"
+  flowControl: "NoFlowControl"
+  timeout: 1
 `;
 
 }
@@ -709,7 +748,45 @@ const winToolsListContent = `\
       ]
     }
   },
-
+  {
+    "name": "proc-telnet",
+    "description": "A tool that runs Telnet sessions by internally using PuTTY's plink executable. This enables interactive Telnet connections on Windows without requiring an external pseudo-terminal emulator like winpty. Users supply the Telnet command arguments, which are passed directly to plink to establish the session.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command-line arguments to be passed to plink for establishing the Telnet connection, such as hostname and port."
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  },
+  {
+    "name": "proc-plink",
+    "description": "A Windows tool that launches an interactive console application via plink, a command-line SSH and Telnet client. Suitable for executing SSH or Telnet sessions directly without needing an external PTY emulator.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command-line arguments passed to plink. For example, use ['-telnet', 'hostname'] to start a telnet session, or ['-ssh', 'user@hostname'] to start an SSH session."
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  },
+  
   {
     "name": "socket-open",
     "description": "This tool initiates a socket connection to the specified host and port.",

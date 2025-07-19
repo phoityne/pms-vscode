@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.6]
+
+- Added proc tool.
+
+
 ## [0.0.5]
 
 - Support serial tool.
