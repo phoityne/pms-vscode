@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.7]
+
+- Fixed resources templates.
+
+
 ## [0.0.6]
 
 - Added proc tool.

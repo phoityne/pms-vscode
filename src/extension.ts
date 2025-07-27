@@ -750,7 +750,7 @@ const winToolsListContent = `\
   },
   {
     "name": "proc-telnet",
-    "description": "A tool that runs Telnet sessions by internally using PuTTY's plink executable. This enables interactive Telnet connections on Windows without requiring an external pseudo-terminal emulator like winpty. Users supply the Telnet command arguments, which are passed directly to plink to establish the session.",
+    "description": "A tool that runs Telnet sessions by internally using PuTTY's plink executable. This enables interactive Telnet connections on Windows without requiring an external pseudo-terminal emulator like winpty. Users supply the Telnet command arguments, which are passed directly to plink to establish the session. (Note: plink.exe must be available in the system PATH.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -769,7 +769,7 @@ const winToolsListContent = `\
   },
   {
     "name": "proc-plink",
-    "description": "A Windows tool that launches an interactive console application via plink, a command-line SSH and Telnet client. Suitable for executing SSH or Telnet sessions directly without needing an external PTY emulator.",
+    "description": "A Windows tool that launches an interactive console application via plink, a command-line SSH and Telnet client. Suitable for executing SSH or Telnet sessions directly without needing an external PTY emulator. (Note: plink.exe must be available in the system PATH.)",
     "inputSchema": {
       "type": "object",
       "properties": {
