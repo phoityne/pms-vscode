@@ -216,7 +216,7 @@ invalidChars:
   - '||'
   - '|'
   - '..'
-invalidWinCmds:
+invalidCmds:
   - del
   - erase
   - rd
@@ -225,7 +225,6 @@ invalidWinCmds:
   - shutdown
   - restart
   - taskkill
-invalidLinuxCmds:
   - rm
   - mv
   - dd
