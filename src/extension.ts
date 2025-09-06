@@ -204,17 +204,9 @@ prompts:
   - 'Password:'
   - 'password:'
   - 'ghci>'
-
-
-# not yet implemented parameters.
-environment:
-  ProgramData: "C:\\\\ProgramData"
-  SystemRoot: "C:\\\\Windows"
-timeoutMicrosec: 1000000
 invalidChars:
   - '&&'
   - '||'
-  - '|'
   - '..'
 invalidCmds:
   - del
@@ -234,6 +226,13 @@ invalidCmds:
   - reboot
   - kill
   - nc
+
+
+# not yet implemented parameters.
+environment:
+  ProgramData: "C:\\\\ProgramData"
+  SystemRoot: "C:\\\\Windows"
+timeoutMicrosec: 1000000
 serial:
   device: "COM3"
   commSpeed: 9600
