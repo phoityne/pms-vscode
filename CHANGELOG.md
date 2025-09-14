@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.9]
+
+* Fixed validateMessage.
+
 ## [0.0.8]
 
 - Support invalidChars config.

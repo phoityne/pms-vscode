@@ -198,6 +198,7 @@ promptsDir: '${promptsDir}'
 resourcesDir: '${resourcesDir}'
 prompts:
   - '>>>'
+  - '...'
   - ']#'
   - ']$'
   - ')?'
@@ -225,10 +226,9 @@ invalidCmds:
   - shutdown
   - reboot
   - kill
-  - nc
+  
 
-
-# not yet implemented parameters.
+  # not yet implemented parameters.
 environment:
   ProgramData: "C:\\\\ProgramData"
   SystemRoot: "C:\\\\Windows"
