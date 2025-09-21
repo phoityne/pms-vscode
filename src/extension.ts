@@ -205,6 +205,8 @@ prompts:
   - 'Password:'
   - 'password:'
   - 'ghci>'
+  - '--More--'
+  - '(END)'
 invalidChars:
   - '&&'
   - '||'
@@ -219,7 +221,6 @@ invalidCmds:
   - restart
   - taskkill
   - rm
-  - mv
   - dd
   - chmod
   - chown

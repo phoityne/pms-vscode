@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.0]
+
+* Added prompt setting.
+
 ## [0.0.9]
 
 * Fixed validateMessage.
