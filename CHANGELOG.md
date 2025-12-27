@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.1]
+
+* Added filesystem tools.
+
 ## [0.1.0]
 
 * Added prompt setting.

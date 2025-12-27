@@ -652,8 +652,60 @@ const defaultToolsListContent = `\
         "arguments"
       ]
     }
+  },
+  {
+    "name": "pms-list-dir",
+    "description": "List the contents of a directory at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the directory whose contents should be listed."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "pms-read-file",
+    "description": "Read the contents of a file at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to read."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "pms-write-file",
+    "description": "Write contents to a file at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path where the file will be written."
+        },
+        "contents": {
+          "type": "string",
+          "description": "The contents to write to the file."
+        }
+      },
+      "required": [
+        "path",
+        "contents"
+      ]
+    }
   }
-
 ]
 
 `;
@@ -965,7 +1017,61 @@ const winToolsListContent = `\
         "arguments"
       ]
     }
+  },
+  {
+    "name": "pms-list-dir",
+    "description": "List the contents of a directory at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the directory whose contents should be listed."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "pms-read-file",
+    "description": "Read the contents of a file at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to read."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "pms-write-file",
+    "description": "Write contents to a file at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path where the file will be written."
+        },
+        "contents": {
+          "type": "string",
+          "description": "The contents to write to the file."
+        }
+      },
+      "required": [
+        "path",
+        "contents"
+      ]
+    }
   }
+
 ]
 
 `;
