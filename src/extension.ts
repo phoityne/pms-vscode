@@ -670,6 +670,22 @@ const defaultToolsListContent = `\
     }
   },
   {
+    "name": "pms-make-dir",
+    "description": "Create a directory at the specified path. Missing parent directories will also be created.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the directory to create."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },  
+  {
     "name": "pms-read-file",
     "description": "Read the contents of a file at the specified path.",
     "inputSchema": {
@@ -1034,6 +1050,22 @@ const winToolsListContent = `\
       ]
     }
   },
+  {
+    "name": "pms-make-dir",
+    "description": "Create a directory at the specified path. Missing parent directories will also be created.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the directory to create."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },  
   {
     "name": "pms-read-file",
     "description": "Read the contents of a file at the specified path.",

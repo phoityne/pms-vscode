@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.2]
+
+* Add file system pms-make-dir tools.
+
 ## [0.1.1]
 
 * Added filesystem tools.
