@@ -189,6 +189,7 @@ function genPtyMcpServerConfig(vscodeFolderPath: string): string {
     const toolsDir = path.join(ptyRoot, 'tools');
     const promptsDir = path.join(ptyRoot, 'prompts');
     const resourcesDir = path.join(ptyRoot, 'resources');
+    const sandboxDir = path.join(ptyRoot, 'sandbox');
 
     return `\
 logDir : '${logDir}'
@@ -196,6 +197,7 @@ logLevel : 'Debug'
 toolsDir: '${toolsDir}'
 promptsDir: '${promptsDir}'
 resourcesDir: '${resourcesDir}'
+sandboxDir : '${sandboxDir}'
 prompts:
   - '>>>'
   - '...'
@@ -214,26 +216,24 @@ invalidChars:
 invalidCmds:
   - del
   - erase
-  - rd
   - rmdir
-  - format
-  - shutdown
-  - restart
-  - taskkill
   - rm
-  - dd
-  - chmod
-  - chown
-  - shutdown
-  - reboot
+  - format
   - kill
+  - taskkill
+  - su
+  - sudo
+  - restart
+  - reboot
+  - shutdown
   
 
-  # not yet implemented parameters.
+# not yet implemented parameters.
 environment:
-  ProgramData: "C:\\\\ProgramData"
-  SystemRoot: "C:\\\\Windows"
+  ProgramData: "C:\\ProgramData"
+  SystemRoot: "C:\\Windows"
 timeoutMicrosec: 1000000
+sandboxNW : "192.168.0.0/24"
 serial:
   device: "COM3"
   commSpeed: 9600
@@ -242,6 +242,7 @@ serial:
   parity: "NoParity"
   flowControl: "NoFlowControl"
   timeout: 1
+
 `;
 
 }
