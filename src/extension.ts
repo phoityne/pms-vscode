@@ -473,7 +473,39 @@ const defaultToolsListContent = `\
       ]
     }
   },
-
+  {
+    "name": "proc-read",
+    "description": "Reads available output from the active PTY session without blocking. If no data is available, returns an empty string.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "integer",
+          "description": "The maximum number of bytes to read."
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  },
+  {
+    "name": "proc-write",
+    "description": "Writes input data to the active PTY session and returns immediately without waiting for completion.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "Data to write to the PTY session, e.g., 'ls -l\\n'"
+        }
+      },
+      "required": [
+        "arguments"
+      ]
+    }
+  },
+  
   {
     "name": "socket-open",
     "description": "This tool initiates a socket connection to the specified host and port.",

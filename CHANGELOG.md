@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.3]
+
+* Add async read/write tools.
+
 ## [0.1.2]
 
 * Add file system pms-make-dir tools.
