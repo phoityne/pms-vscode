@@ -677,7 +677,7 @@ const defaultToolsListContent = `\
 
   {
     "name": "proc-cmd",
-    "description": "The `proc-cmd` tool launches the Windows Command Prompt (`cmd.exe`) as a subprocess. It allows the AI to interact with the standard Windows shell environment, enabling execution of batch commands, file operations, and system configuration tasks in a familiar terminal interface. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "description": "The 'proc-cmd' tool launches the Windows Command Prompt ('cmd.exe') as a subprocess. It allows the AI to interact with the standard Windows shell environment, enabling execution of batch commands, file operations, and system configuration tasks in a familiar terminal interface. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {},
@@ -686,7 +686,7 @@ const defaultToolsListContent = `\
   },
   {
     "name": "proc-ps",
-    "description": "`proc-ps` launches the Windows PowerShell (`powershell.exe`) as a subprocess. It provides an interactive command-line environment where the AI can execute PowerShell commands, scripts, and system administration tasks. The shell is started with default options to keep it open and ready for further input. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "description": "'proc-ps' launches the Windows PowerShell ('powershell.exe') as a subprocess. It provides an interactive command-line environment where the AI can execute PowerShell commands, scripts, and system administration tasks. The shell is started with default options to keep it open and ready for further input. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {},
@@ -695,7 +695,7 @@ const defaultToolsListContent = `\
   },
   {
     "name": "proc-ssh",
-    "description": "`proc-ssh` launches an SSH client (`ssh`) as a subprocess using `runProcess`. It enables the AI to initiate remote connections to other systems via the Secure Shell protocol. The tool can be used to execute remote commands, access remote shells, or tunnel services over SSH. The required `arguments` field allows specifying the target user, host, and any SSH options (e.g., `-p`, `-i`, `-L`). (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "description": "'proc-ssh' launches an SSH client ('ssh') as a subprocess using 'runProcess'. It enables the AI to initiate remote connections to other systems via the Secure Shell protocol. The tool can be used to execute remote commands, access remote shells, or tunnel services over SSH. The required 'arguments' field allows specifying the target user, host, and any SSH options (e.g., '-p', '-i', '-L'). (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
