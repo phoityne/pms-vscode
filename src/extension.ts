@@ -226,7 +226,9 @@ invalidCmds:
   - restart
   - reboot
   - shutdown
-  
+agentAllowedCmds:
+  - cmd.exe
+  - bash  
 
 # not yet implemented parameters.
 environment:
@@ -250,262 +252,124 @@ serial:
 const defaultToolsListContent = `\
 [
   {
-    "name": "pty-connect",
-    "description": "Runs a command via a pseudo-terminal (pty) to interact with external tools or services, with optional arguments.",
+    "name": "agent-proc-run",
+    "description": "Spawns an external process with the specified command and options. The process's stdin/stdout are connected for subsequent agent-proc-read and agent-proc-write operations. Only one process can be active at a time.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "command": {
           "type": "string",
-          "description": "Name of the command to run."
+          "description": "The executable to run."
         },
         "arguments": {
           "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "List of arguments for the command."
-        }
-      },
-      "required": [
-        "command"
-      ]
-    }
-  },
-  {
-    "name": "pty-terminate",
-    "description": "Forcefully terminates an active pseudo-terminal (PTY) connection.",
-    "inputSchema": {"type": "object"}
-  },
-  {
-    "name": "pty-message",
-    "description": "pms-messages is a tool for sending structured instructions or commands to a running PTY session. It abstracts direct terminal input, allowing the LLM (MCP client) to interact with the PTY process in a controlled and programmable way without needing to know what is running inside.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "string",
-          "description": "df -k"
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-  
-  {
-    "name": "pty-bash",
-    "description": "pty-bash is a tool that launches a bash shell in a pseudo terminal (PTY). It allows the LLM (MCP client) to interact with a real Linux shell in an interactive terminal (PTY). This enables AI to run system commands, collect information, and handle prompts or TUI-based tools as if operated by a human, making it effective for dynamic Linux-based automation and diagnostics.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Arguments to pass to /bin/bash command, e.g.,  [\\"-i\\", \\"-l\\"]"
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-
-  {
-    "name": "pty-ssh",
-    "description": "Establishes an SSH session in a pseudo-terminal with the specified arguments, allowing interaction with remote systems.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Arguments to be passed to the SSH command, such as user, host, and optional flags."
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-
-  {
-    "name": "pty-telnet",
-    "description": "Launches the telnet command within a pseudo-terminal (PTY) session. This allows interactive communication with a remote Telnet server, enabling the AI to respond to prompts such as 'login:' or 'Password:' just like a human user. The PTY environment ensures that the terminal behaves like a real TTY device, which is required for many Telnet servers.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Arguments to be passed to the telnet command, such as user, host, and optional flags."
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-
-  {
-    "name": "pty-cabal",
-    "description": "Launches a cabal repl session in a pseudo-terminal using the specified project directory, main source file, and arguments.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "projectDir": {
-          "type": "string",
-          "description": "The directory containing the Haskell project. cabal will use this as the working directory."
+          "items": { "type": "string" },
+          "description": "Optional arguments to pass to the command."
         },
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Command-line arguments to be passed directly to cabal repl on session start."
+        "environment": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Optional additional environment variables to set for the process."
         }
       },
-      "required": [
-        "projectDir"
-      ]
-    }
-  },
-
-  {
-    "name": "pty-stack",
-    "description": "Launches a stack repl session in a pseudo-terminal using the specified project directory, main source file, and arguments.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "projectDir": {
-          "type": "string",
-          "description": "The directory containing the Haskell project. stack will use this as the working directory."
-        },
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Command-line arguments to be passed directly to stack repl on session start."
-        }
-      },
-      "required": [
-        "projectDir"
-      ]
-    }
-  },
-
-  {
-    "name": "pty-ghci",
-    "description": "Launches a GHCi session in a pseudo-terminal using the specified project directory, main source file, and arguments.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "projectDir": {
-          "type": "string",
-          "description": "The directory containing the Haskell project. GHCi will use this as the working directory."
-        },
-        "startupFile": {
-          "type": "string",
-          "description": "The Haskell source file to load on startup, typically Main.hs or the entry point for the application. This should be provided as a full absolute path."
-        },
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Command-line arguments to be passed directly to GHCi on session start."
-        }
-      },
-      "required": [
-        "projectDir"
-      ]
+      "required": ["command"]
     }
   },
   {
-    "name": "proc-spawn",
-    "description": "Spawns an external process using the specified arguments and enables interactive communication via standard input and output. Unlike PTY-based execution, this communicates directly with the process using the runProcess function without allocating a pseudo-terminal. Suitable for non-TUI, stdin/stdout-based interactive programs.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "command": {
-          "type": "string",
-          "description": "Name of the command to run."
-        },
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "List of arguments for the command."
-        }
-      },
-      "required": [
-        "command"
-      ]
-    }
-  },
-  {
-    "name": "proc-terminate",
-    "description": "Forcefully terminates a running process created via runProcess.",
-    "inputSchema": {"type": "object"}
-  },
-  {
-    "name": "proc-message",
-    "description": "Sends structured text-based instructions or commands to a subprocess started with runProcess. It provides a programmable interface for interacting with the process via standard input.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "string",
-          "description": "df -k"
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-  {
-    "name": "proc-read",
-    "description": "Reads available output from the active PTY session without blocking. If no data is available, returns an empty string.",
+    "name": "agent-proc-read",
+    "description": "Reads up to the specified number of bytes from the stdout of the running process. Returns immediately with available data (non-blocking). Returns an empty string if no data is available.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "arguments": {
           "type": "integer",
-          "description": "The maximum number of bytes to read."
+          "description": "Maximum number of bytes to read."
         }
       },
-      "required": [
-        "arguments"
-      ]
+      "required": ["arguments"]
     }
   },
   {
-    "name": "proc-write",
-    "description": "Writes input data to the active PTY session and returns immediately without waiting for completion.",
+    "name": "agent-proc-write",
+    "description": "Writes the specified string to the stdin of the running process.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "arguments": {
           "type": "string",
-          "description": "Data to write to the PTY session, e.g., 'ls -l\\n'"
+          "description": "Data to write to the process's stdin. Include newline (\\n) as needed."
         }
       },
-      "required": [
-        "arguments"
-      ]
+      "required": ["arguments"]
     }
   },
-  
+  {
+    "name": "agent-proc-terminate",
+    "description": "Forcefully terminates the currently running process. Resets internal state so agent-proc-run can be called again.",
+    "inputSchema": { "type": "object" }
+  },
+
+  {
+    "name": "pms-list-dir",
+    "description": "List the contents of a directory at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the directory whose contents should be listed."
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-make-dir",
+    "description": "Create a directory at the specified path. Missing parent directories will also be created.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the directory to create."
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-read-file",
+    "description": "Read the contents of a file at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to read."
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-write-file",
+    "description": "Write contents to a file at the specified path.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path where the file will be written."
+        },
+        "contents": {
+          "type": "string",
+          "description": "The contents to write to the file."
+        }
+      },
+      "required": ["path", "contents"]
+    }
+  },
+
   {
     "name": "socket-open",
     "description": "This tool initiates a socket connection to the specified host and port.",
@@ -521,15 +385,12 @@ const defaultToolsListContent = `\
           "description": "The port number to connect to, provided as a string (e.g., '5000')."
         }
       },
-      "required": [
-        "host",
-        "port"
-      ]
+      "required": ["host", "port"]
     }
   },
   {
     "name": "socket-close",
-    "description": "This tool close active socket connection that was previously established using the 'socket-opne' tool.",
+    "description": "This tool close active socket connection that was previously established using the 'socket-open' tool.",
     "inputSchema": {"type": "object"}
   },
   {
@@ -543,9 +404,7 @@ const defaultToolsListContent = `\
           "description": "The number of bytes to read from the socket"
         }
       },
-      "required": [
-        "size"
-      ]
+      "required": ["size"]
     }
   },
   {
@@ -564,9 +423,7 @@ const defaultToolsListContent = `\
           "description": "An array of byte values (integers between 0 and 255) to send"
         }
       },
-      "required": [
-        "data"
-      ]
+      "required": ["data"]
     }
   },
   {
@@ -580,9 +437,7 @@ const defaultToolsListContent = `\
           "description": "The message content to be sent over the socket connection."
         }
       },
-      "required": [
-        "arguments"
-      ]
+      "required": ["arguments"]
     }
   },
   {
@@ -600,10 +455,7 @@ const defaultToolsListContent = `\
           "description": "The port number to connect to, provided as a string (e.g., '5000')."
         }
       },
-      "required": [
-        "host",
-        "port"
-      ]
+      "required": ["host", "port"]
     }
   },
 
@@ -622,10 +474,7 @@ const defaultToolsListContent = `\
           "description": "Baud rate for communication (e.g., 9600, 115200). Must match the target device's configuration."
         }
       },
-      "required": [
-        "device",
-        "speed"
-      ]
+      "required": ["device", "speed"]
     }
   },
   {
@@ -644,9 +493,7 @@ const defaultToolsListContent = `\
           "description": "The number of bytes to read from the serial"
         }
       },
-      "required": [
-        "size"
-      ]
+      "required": ["size"]
     }
   },
   {
@@ -665,9 +512,7 @@ const defaultToolsListContent = `\
           "description": "An array of byte values (integers between 0 and 255) to send"
         }
       },
-      "required": [
-        "data"
-      ]
+      "required": ["data"]
     }
   },
   {
@@ -681,78 +526,297 @@ const defaultToolsListContent = `\
           "description": "The message content to be sent over the serial connection."
         }
       },
-      "required": [
-        "arguments"
-      ]
+      "required": ["arguments"]
+    }
+  },
+
+  {
+    "name": "pty-bash",
+    "description": "pty-bash is a tool that launches a bash shell in a pseudo terminal (PTY). It allows the LLM (MCP client) to interact with a real Linux shell in an interactive terminal (PTY). This enables AI to run system commands, collect information, and handle prompts or TUI-based tools as if operated by a human, making it effective for dynamic Linux-based automation and diagnostics. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Arguments to pass to /bin/bash command, e.g., [\"-i\", \"-l\"]"
+        }
+      },
+      "required": ["arguments"]
     }
   },
   {
-    "name": "pms-list-dir",
-    "description": "List the contents of a directory at the specified path.",
+    "name": "pty-ssh",
+    "description": "Establishes an SSH session in a pseudo-terminal with the specified arguments, allowing interaction with remote systems. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "path": {
-          "type": "string",
-          "description": "The filesystem path of the directory whose contents should be listed."
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Arguments to be passed to the SSH command, such as user, host, and optional flags."
         }
       },
-      "required": [
-        "path"
-      ]
+      "required": ["arguments"]
     }
   },
   {
-    "name": "pms-make-dir",
-    "description": "Create a directory at the specified path. Missing parent directories will also be created.",
+    "name": "pty-telnet",
+    "description": "Launches the telnet command within a pseudo-terminal (PTY) session. This allows interactive communication with a remote Telnet server, enabling the AI to respond to prompts such as 'login:' or 'Password:' just like a human user. The PTY environment ensures that the terminal behaves like a real TTY device, which is required for many Telnet servers. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "path": {
-          "type": "string",
-          "description": "The filesystem path of the directory to create."
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Arguments to be passed to the telnet command, such as user, host, and optional flags."
         }
       },
-      "required": [
-        "path"
-      ]
-    }
-  },  
-  {
-    "name": "pms-read-file",
-    "description": "Read the contents of a file at the specified path.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "path": {
-          "type": "string",
-          "description": "The filesystem path of the file to read."
-        }
-      },
-      "required": [
-        "path"
-      ]
+      "required": ["arguments"]
     }
   },
   {
-    "name": "pms-write-file",
-    "description": "Write contents to a file at the specified path.",
+    "name": "pty-cabal",
+    "description": "Launches a cabal repl session in a pseudo-terminal using the specified project directory, main source file, and arguments. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "path": {
+        "projectDir": {
           "type": "string",
-          "description": "The filesystem path where the file will be written."
+          "description": "The directory containing the Haskell project. cabal will use this as the working directory."
         },
-        "contents": {
-          "type": "string",
-          "description": "The contents to write to the file."
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command-line arguments to be passed directly to cabal repl on session start."
         }
       },
-      "required": [
-        "path",
-        "contents"
-      ]
+      "required": ["projectDir"]
+    }
+  },
+  {
+    "name": "pty-stack",
+    "description": "Launches a stack repl session in a pseudo-terminal using the specified project directory, main source file, and arguments. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectDir": {
+          "type": "string",
+          "description": "The directory containing the Haskell project. stack will use this as the working directory."
+        },
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command-line arguments to be passed directly to stack repl on session start."
+        }
+      },
+      "required": ["projectDir"]
+    }
+  },
+  {
+    "name": "pty-ghci",
+    "description": "Launches a GHCi session in a pseudo-terminal using the specified project directory, main source file, and arguments. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectDir": {
+          "type": "string",
+          "description": "The directory containing the Haskell project. GHCi will use this as the working directory."
+        },
+        "startupFile": {
+          "type": "string",
+          "description": "The Haskell source file to load on startup, typically Main.hs or the entry point for the application. This should be provided as a full absolute path."
+        },
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command-line arguments to be passed directly to GHCi on session start."
+        }
+      },
+      "required": ["projectDir"]
+    }
+  },
+  {
+    "name": "pty-connect",
+    "description": "Runs a command via a pseudo-terminal (pty) to interact with external tools or services, with optional arguments. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Name of the command to run."
+        },
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of arguments for the command."
+        }
+      },
+      "required": ["command"]
+    }
+  },
+  {
+    "name": "pty-message",
+    "description": "pms-messages is a tool for sending structured instructions or commands to a running PTY session. It abstracts direct terminal input, allowing the LLM (MCP client) to interact with the PTY process in a controlled and programmable way. (Note: This tool is duplicated by agent-proc-write, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "df -k"
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "pty-terminate",
+    "description": "Forcefully terminates an active pseudo-terminal (PTY) connection. (Note: This tool is duplicated by agent-proc-terminate, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {"type": "object"}
+  },
+
+  {
+    "name": "proc-cmd",
+    "description": "The `proc-cmd` tool launches the Windows Command Prompt (`cmd.exe`) as a subprocess. It allows the AI to interact with the standard Windows shell environment, enabling execution of batch commands, file operations, and system configuration tasks in a familiar terminal interface. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "proc-ps",
+    "description": "`proc-ps` launches the Windows PowerShell (`powershell.exe`) as a subprocess. It provides an interactive command-line environment where the AI can execute PowerShell commands, scripts, and system administration tasks. The shell is started with default options to keep it open and ready for further input. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "proc-ssh",
+    "description": "`proc-ssh` launches an SSH client (`ssh`) as a subprocess using `runProcess`. It enables the AI to initiate remote connections to other systems via the Secure Shell protocol. The tool can be used to execute remote commands, access remote shells, or tunnel services over SSH. The required `arguments` field allows specifying the target user, host, and any SSH options (e.g., `-p`, `-i`, `-L`). (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Arguments to be passed to the SSH command, such as user, host, and optional flags."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-telnet",
+    "description": "A tool that runs Telnet sessions by internally using PuTTY's plink executable. This enables interactive Telnet connections on Windows without requiring an external pseudo-terminal emulator like winpty. Users supply the Telnet command arguments, which are passed directly to plink to establish the session. (Note: plink.exe must be available in the system PATH.) (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command-line arguments to be passed to plink for establishing the Telnet connection, such as hostname and port."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-plink",
+    "description": "A Windows tool that launches an interactive console application via plink, a command-line SSH and Telnet client. Suitable for executing SSH or Telnet sessions directly without needing an external PTY emulator. (Note: plink.exe must be available in the system PATH.) (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command-line arguments passed to plink. For example, use ['-telnet', 'hostname'] to start a telnet session, or ['-ssh', 'user@hostname'] to start an SSH session."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-spawn",
+    "description": "Spawns an external process using the specified arguments and enables interactive communication via standard input and output. Unlike PTY-based execution, this communicates directly with the process using the runProcess function without allocating a pseudo-terminal. Suitable for non-TUI, stdin/stdout-based interactive programs. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Name of the command to run."
+        },
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of arguments for the command."
+        }
+      },
+      "required": ["command"]
+    }
+  },
+  {
+    "name": "proc-message",
+    "description": "Sends structured text-based instructions or commands to a subprocess started with runProcess. It provides a programmable interface for interacting with the process via standard input. (Note: This tool is duplicated by agent-proc-write, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "df -k"
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-read",
+    "description": "Reads available output from the active PTY session without blocking. If no data is available, returns an empty string. (Note: This tool is duplicated by agent-proc-read, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "integer",
+          "description": "The maximum number of bytes to read."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-write",
+    "description": "Writes input data to the active PTY session and returns immediately without waiting for completion. (Note: This tool is duplicated by agent-proc-write, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "Data to write to the PTY session, e.g., 'ls -l\\n'"
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-terminate",
+    "description": "Forcefully terminates a running process created via runProcess. (Note: This tool is duplicated by agent-proc-terminate, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {"type": "object"}
+  },
+
+  {
+    "name": "pms_ping",
+    "description": "Sends ICMP echo requests to a specified host to check network connectivity and measure response times.(linux-only)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "The target host or IP address, along with optional ping command arguments (e.g., '-c 4 www.google.com')."
+        }
+      },
+      "required": ["arguments"]
     }
   }
 ]
