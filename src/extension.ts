@@ -227,8 +227,12 @@ invalidCmds:
   - reboot
   - shutdown
 agentAllowedCmds:
+  - cmd
   - cmd.exe
-  - bash  
+  - powershell
+  - powershell.exe
+  - bash
+  - /bin/bash
 
 # not yet implemented parameters.
 environment:
@@ -339,13 +343,21 @@ const defaultToolsListContent = `\
   },
   {
     "name": "pms-read-file",
-    "description": "Read the contents of a file at the specified path.",
+    "description": "Read the contents of a file at the specified path. Optionally specify startLine/endLine (1-based, inclusive) to read only a partial range of lines.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "path": {
           "type": "string",
           "description": "The filesystem path of the file to read."
+        },
+        "startLine": {
+          "type": "integer",
+          "description": "First line to read (1-based, inclusive). Omit to start from the beginning of the file."
+        },
+        "endLine": {
+          "type": "integer",
+          "description": "Last line to read (1-based, inclusive). Omit to read to the end of the file. Clamped to actual line count if exceeded."
         }
       },
       "required": ["path"]
@@ -367,6 +379,88 @@ const defaultToolsListContent = `\
         }
       },
       "required": ["path", "contents"]
+    }
+  },
+  {
+    "name": "pms-file-info",
+    "description": "Return basic metadata for a file: total line count and byte size. Use this before pms-read-file to understand the file's scale, and use the line count with pms-read-file partial-read to avoid loading more than necessary.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to inspect."
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-grep-file",
+    "description": "Search a file for lines matching a POSIX extended regular expression. Returns a JSON array of hit objects, each with: 'line' (1-based line number), 'text' (full content of the matching line), and 'cols' (array of 1-based column offsets where the pattern matches within that line). Returns an empty array when no lines match. Use the returned line numbers with pms-read-file partial-read to efficiently retrieve surrounding context.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to search."
+        },
+        "pattern": {
+          "type": "string",
+          "description": "POSIX extended regular expression pattern to search for."
+        }
+      },
+      "required": ["path", "pattern"]
+    }
+  },
+  {
+    "name": "pms-replace-file",
+    "description": "Replace literal text in a file. Each replacement is applied in order, and every occurrence of oldText found at that step is replaced with newText. This is not a regular expression replacement.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to update."
+        },
+        "replacements": {
+          "type": "array",
+          "description": "Replacement rules applied in order. For each rule, all occurrences of oldText are replaced with newText.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {
+                "type": "string",
+                "description": "Literal text to search for. Must be non-empty. All occurrences are replaced."
+              },
+              "newText": {
+                "type": "string",
+                "description": "Text to write in place of every matching oldText occurrence."
+              }
+            },
+            "required": ["oldText", "newText"]
+          }
+        }
+      },
+      "required": ["path", "replacements"]
+    }
+  },
+  {
+    "name": "pms-patch-file",
+    "description": "Apply a unified diff patch to a file at the specified path. The patch must be in unified diff format (e.g., @@ -1,3 +1,3 @@). On success, returns the path of the patched file. On failure, returns an error message such as HunkMismatch. NOTE: When using multiple hunks, each hunk's line numbers (both - and + sides) must account for the cumulative line count delta (additions minus deletions) of all preceding hunks.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to patch."
+        },
+        "patch": {
+          "type": "string",
+          "description": "The unified diff patch string to apply. Example: \"@@ -1,3 +1,3 @@\\n context\\n-old line\\n+new line\\n context\\n\""
+        }
+      },
+      "required": ["path", "patch"]
     }
   },
 

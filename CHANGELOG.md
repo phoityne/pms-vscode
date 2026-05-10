@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.5]
+
+* Added filesystem tools.
+
 ## [0.1.4]
 
 * Add agent-proc tools (agent-proc-run, agent-proc-read, agent-proc-write, agent-proc-terminate).
