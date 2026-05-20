@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.6]
+
+* Added pms-infra-agent-socket, pms-infra-agent-serial.
+
 ## [0.1.5]
 
 * Added filesystem tools.

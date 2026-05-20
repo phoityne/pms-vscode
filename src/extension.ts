@@ -198,6 +198,32 @@ toolsDir: '${toolsDir}'
 promptsDir: '${promptsDir}'
 resourcesDir: '${resourcesDir}'
 sandboxDir : '${sandboxDir}'
+agentAllowedCmds:
+  - cmd
+  - cmd.exe
+  - powershell
+  - powershell.exe
+  - bash
+  - /bin/bash
+sandboxNetworks:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+invalidPatterns:
+  - 'del\s'
+  - 'erase\s'
+  - 'rmdir\s'
+  - 'rm\s'
+  - 'format\s'
+  - 'kill\s'
+  - taskkill
+  - su
+  - sudo
+  - restart
+  - reboot
+  - shutdown
+  - '.*ssh.*'
+  - '.*telnet.*'
 prompts:
   - '>>>'
   - '...'
@@ -226,29 +252,7 @@ invalidCmds:
   - restart
   - reboot
   - shutdown
-agentAllowedCmds:
-  - cmd
-  - cmd.exe
-  - powershell
-  - powershell.exe
-  - bash
-  - /bin/bash
-
-# not yet implemented parameters.
-environment:
-  ProgramData: "C:\\ProgramData"
-  SystemRoot: "C:\\Windows"
-timeoutMicrosec: 1000000
-sandboxNW : "192.168.0.0/24"
-serial:
-  device: "COM3"
-  commSpeed: 9600
-  bitsPerWord: 8
-  stopb: 1
-  parity: "NoParity"
-  flowControl: "NoFlowControl"
-  timeout: 1
-
+  
 `;
 
 }
@@ -299,12 +303,16 @@ const defaultToolsListContent = `\
     "inputSchema": {
       "type": "object",
       "properties": {
-        "arguments": {
+        "data": {
           "type": "string",
-          "description": "Data to write to the process's stdin. Include newline (\\n) as needed."
+          "description": "Data to write to the process's stdin."
+        },
+        "appendNewline": {
+          "type": "boolean",
+          "description": "When omitted or true, append a newline to the data before writing. When false, write the data unchanged."
         }
       },
-      "required": ["arguments"]
+      "required": ["data"]
     }
   },
   {
@@ -312,7 +320,198 @@ const defaultToolsListContent = `\
     "description": "Forcefully terminates the currently running process. Resets internal state so agent-proc-run can be called again.",
     "inputSchema": { "type": "object" }
   },
+  {
+    "name": "agent-socket-open",
+    "description": "Opens a socket connection for subsequent agent-socket-read, agent-socket-write, agent-socket-read-byte, and agent-socket-write-byte operations. Specify either file for a Unix domain socket, or host and port for a TCP socket.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Unix domain socket path."
+        },
+        "host": {
+          "type": "string",
+          "description": "TCP host name or IP address."
+        },
+        "port": {
+          "type": "string",
+          "description": "TCP service name or port number."
+        }
+      }
+    }
+  },
+  {
+    "name": "agent-socket-close",
+    "description": "Closes the active agent socket connection.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-socket-read",
+    "description": "Reads up to the specified number of bytes from the active agent socket connection and returns the data as a UTF-8 string. Returns an empty string if no data is available before timeout.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "integer",
+          "description": "Maximum number of bytes to read."
+        }
+      },
+      "required": ["length"]
+    }
+  },
+  {
+    "name": "agent-socket-read-byte",
+    "description": "Reads up to the specified number of bytes from the active agent socket connection and returns the data as an uppercase hex string.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "integer",
+          "description": "Maximum number of bytes to read."
+        }
+      },
+      "required": ["length"]
+    }
+  },
+  {
+    "name": "agent-socket-write",
+    "description": "Writes the specified UTF-8 string to the active agent socket connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Text data to write to the socket."
+        },
+        "appendNewline": {
+          "type": "boolean",
+          "description": "When omitted or true, append a newline to the data before writing. When false, write the data unchanged."
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-socket-write-byte",
+    "description": "Decodes the specified hex string and writes the resulting bytes to the active agent socket connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Hex string to decode and write to the socket, for example 000A1BFF."
+        }
+      },
+      "required": ["data"]
+    }
+  },
 
+  {
+    "name": "agent-serial-open",
+    "description": "Opens a serial port connection for subsequent agent-serial-read, agent-serial-write, agent-serial-read-byte, and agent-serial-write-byte operations. Only one port can be active at a time.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "Serial device path, e.g. /dev/ttyUSB0 or COM3."
+        },
+        "commSpeed": {
+          "type": "integer",
+          "description": "Baud rate, e.g. 9600 or 115200. Default: 9600."
+        },
+        "bitsPerWord": {
+          "type": "integer",
+          "description": "Data bits (5-8). Default: 8."
+        },
+        "stopb": {
+          "type": "integer",
+          "description": "Stop bits (1 or 2). Default: 1."
+        },
+        "parity": {
+          "type": "string",
+          "description": "Parity: \"NoParity\", \"Odd\", or \"Even\". Default: \"NoParity\"."
+        },
+        "flowControl": {
+          "type": "string",
+          "description": "Flow control: \"NoFlowControl\" or \"Software\". Default: \"NoFlowControl\"."
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Read timeout in tenths of a second. Default: 1."
+        }
+      },
+      "required": ["device"]
+    }
+  },
+  {
+    "name": "agent-serial-close",
+    "description": "Closes the active serial port connection.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-serial-read",
+    "description": "Reads up to the specified number of bytes from the active serial port and returns the data as a UTF-8 string. Returns an empty string if no data is available before timeout.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "integer",
+          "description": "Maximum number of bytes to read."
+        }
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "agent-serial-read-byte",
+    "description": "Reads up to the specified number of bytes from the active serial port and returns the data as an uppercase hex string (e.g. FF0A1B41).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "integer",
+          "description": "Maximum number of bytes to read."
+        }
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "agent-serial-write",
+    "description": "Writes the specified UTF-8 string to the active serial port.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Text data to write to the serial port."
+        },
+        "appendNewline": {
+          "type": "boolean",
+          "description": "When omitted or true, append a newline to the data before writing. When false, write the data unchanged."
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-serial-write-byte",
+    "description": "Decodes the specified hex string and writes the resulting bytes to the active serial port. Accepts uppercase or lowercase hex, e.g. FF0A1BFF or 000a1bff.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Hex string to decode and write to the serial port, for example 000A1BFF."
+        }
+      },
+      "required": ["data"]
+    }
+  },
+
+  
   {
     "name": "pms-list-dir",
     "description": "List the contents of a directory at the specified path.",
@@ -466,7 +665,7 @@ const defaultToolsListContent = `\
 
   {
     "name": "socket-open",
-    "description": "This tool initiates a socket connection to the specified host and port.",
+    "description": "This tool initiates a socket connection to the specified host and port. (Deprecated: This tool is duplicated by agent-socket-open, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -484,12 +683,12 @@ const defaultToolsListContent = `\
   },
   {
     "name": "socket-close",
-    "description": "This tool close active socket connection that was previously established using the 'socket-open' tool.",
+    "description": "This tool close active socket connection that was previously established using the 'socket-open' tool. (Deprecated: This tool is duplicated by agent-socket-close, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {"type": "object"}
   },
   {
     "name": "socket-read",
-    "description": "Reads the specified number of bytes from the socket. The 'size' parameter indicates how many bytes to read.",
+    "description": "Reads the specified number of bytes from the socket. The 'size' parameter indicates how many bytes to read. (Deprecated: This tool is duplicated by agent-socket-read-byte, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -503,7 +702,7 @@ const defaultToolsListContent = `\
   },
   {
     "name": "socket-write",
-    "description": "Write a sequence of bytes to the socket",
+    "description": "Write a sequence of bytes to the socket. (Deprecated: This tool is duplicated by agent-socket-write-byte, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -522,7 +721,7 @@ const defaultToolsListContent = `\
   },
   {
     "name": "socket-message",
-    "description": "This tool sends a message over the active socket connection.",
+    "description": "This tool sends a message over the active socket connection. (Deprecated: This tool is duplicated by agent-socket-write, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -536,7 +735,7 @@ const defaultToolsListContent = `\
   },
   {
     "name": "socket-telnet",
-    "description": "A simple Telnet-like communication tool over raw TCP sockets. This tool connects to a specified host and port, sends and receives data, and removes any Telnet IAC (Interpret As Command) sequences from the communication stream. Note: This is a simplified Telnet implementation and does not support full Telnet protocol features.",
+    "description": "A simple Telnet-like communication tool over raw TCP sockets. This tool connects to a specified host and port, sends and receives data, and removes any Telnet IAC (Interpret As Command) sequences from the communication stream. Note: This is a simplified Telnet implementation and does not support full Telnet protocol features. (Deprecated: This tool is duplicated by agent-socket-open, agent-socket-read-byte, and agent-socket-write-byte, which provide equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -555,7 +754,7 @@ const defaultToolsListContent = `\
 
   {
     "name": "serial-open",
-    "description": "Opens a serial port connection to a specified device with a given baud rate. Commonly used to access on-premises hardware or network devices via console.",
+    "description": "Opens a serial port connection to a specified device with a given baud rate. Commonly used to access on-premises hardware or network devices via console. (Deprecated: This tool is duplicated by agent-serial-open, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -573,12 +772,12 @@ const defaultToolsListContent = `\
   },
   {
     "name": "serial-close",
-    "description": "This tool close active serial connection that was previously established using the 'serial-open' tool.",
+    "description": "This tool close active serial connection that was previously established using the 'serial-open' tool. (Deprecated: This tool is duplicated by agent-serial-close, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {"type": "object"}
   },
   {
     "name": "serial-read",
-    "description": "Reads the specified number of bytes from the serial. The 'size' parameter indicates how many bytes to read.",
+    "description": "Reads the specified number of bytes from the serial. The 'size' parameter indicates how many bytes to read. (Deprecated: This tool is duplicated by agent-serial-read-byte, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -592,7 +791,7 @@ const defaultToolsListContent = `\
   },
   {
     "name": "serial-write",
-    "description": "Write a sequence of bytes to the serial",
+    "description": "Write a sequence of bytes to the serial. (Deprecated: This tool is duplicated by agent-serial-write-byte, which provides equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -611,7 +810,7 @@ const defaultToolsListContent = `\
   },
   {
     "name": "serial-message",
-    "description": "This tool sends a specified string to the active socket connection, then waits for a recognizable prompt from the remote side. Upon detecting the prompt, it captures and returns all output received prior to it.",
+    "description": "This tool sends a specified string to the active serial connection, then waits for a recognizable prompt from the remote side. Upon detecting the prompt, it captures and returns all output received prior to it. (Deprecated: This tool is duplicated by agent-serial-write and agent-serial-read, which provide equivalent functionality with a more agent-friendly interface.)",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -921,310 +1120,258 @@ const defaultToolsListContent = `\
 const winToolsListContent = `\
 [
   {
-    "name": "proc-spawn",
-    "description": "Spawns an external process using the specified arguments and enables interactive communication via standard input and output. Unlike PTY-based execution, this communicates directly with the process using the runProcess function without allocating a pseudo-terminal. Suitable for non-TUI, stdin/stdout-based interactive programs.",
+    "name": "agent-proc-run",
+    "description": "Spawns an external process with the specified command and options. The process's stdin/stdout are connected for subsequent agent-proc-read and agent-proc-write operations. Only one process can be active at a time.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "command": {
           "type": "string",
-          "description": "Name of the command to run."
+          "description": "The executable to run."
         },
         "arguments": {
           "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "List of arguments for the command."
-        }
-      },
-      "required": [
-        "command"
-      ]
-    }
-  },
-  {
-    "name": "proc-terminate",
-    "description": "Forcefully terminates a running process created via runProcess.",
-    "inputSchema": {"type": "object"}
-  },
-  {
-    "name": "proc-message",
-    "description": "Sends structured text-based instructions or commands to a subprocess started with runProcess. It provides a programmable interface for interacting with the process via standard input.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "string",
-          "description": "df -k"
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-  {
-    "name": "proc-cmd",
-    "description": "The proc-cmd tool launches the Windows Command Prompt (cmd.exe) as a subprocess. It allows the AI to interact with the standard Windows shell environment, enabling execution of batch commands, file operations, and system configuration tasks in a familiar terminal interface.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-      },
-      "required": [
-      ]
-    }
-  },
-  {
-    "name": "proc-ps",
-    "description": "proc-ps launches the Windows PowerShell (powershell.exe) as a subprocess. It provides an interactive command-line environment where the AI can execute PowerShell commands, scripts, and system administration tasks. The shell is started with default options to keep it open and ready for further input.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-      },
-      "required": [
-      ]
-    }
-  },
-
-  {
-    "name": "proc-ssh",
-    "description": "proc-ssh launches an SSH client (ssh) as a subprocess using runProcess. It enables the AI to initiate remote connections to other systems via the Secure Shell protocol. The tool can be used to execute remote commands, access remote shells, or tunnel services over SSH. The required arguments field allows specifying the target user, host, and any SSH options (e.g., -p, -i, -L).",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Arguments to be passed to the SSH command, such as user, host, and optional flags."
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-  {
-    "name": "proc-telnet",
-    "description": "A tool that runs Telnet sessions by internally using PuTTY's plink executable. This enables interactive Telnet connections on Windows without requiring an external pseudo-terminal emulator like winpty. Users supply the Telnet command arguments, which are passed directly to plink to establish the session. (Note: plink.exe must be available in the system PATH.)",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Command-line arguments to be passed to plink for establishing the Telnet connection, such as hostname and port."
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-  {
-    "name": "proc-plink",
-    "description": "A Windows tool that launches an interactive console application via plink, a command-line SSH and Telnet client. Suitable for executing SSH or Telnet sessions directly without needing an external PTY emulator. (Note: plink.exe must be available in the system PATH.)",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Command-line arguments passed to plink. For example, use ['-telnet', 'hostname'] to start a telnet session, or ['-ssh', 'user@hostname'] to start an SSH session."
-        }
-      },
-      "required": [
-        "arguments"
-      ]
-    }
-  },
-  
-  {
-    "name": "socket-open",
-    "description": "This tool initiates a socket connection to the specified host and port.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The hostname or IP address to connect to (e.g., '127.0.0.1' or 'localhost')."
+          "items": { "type": "string" },
+          "description": "Optional arguments to pass to the command."
         },
-        "port": {
-          "type": "string",
-          "description": "The port number to connect to, provided as a string (e.g., '5000')."
+        "environment": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Optional additional environment variables to set for the process."
         }
       },
-      "required": [
-        "host",
-        "port"
-      ]
+      "required": ["command"]
     }
   },
   {
-    "name": "socket-close",
-    "description": "This tool close active socket connection that was previously established using the 'socket-opne' tool.",
-    "inputSchema": {"type": "object"}
-  },
-  {
-    "name": "socket-read",
-    "description": "Reads the specified number of bytes from the socket. The 'size' parameter indicates how many bytes to read.",
+    "name": "agent-proc-read",
+    "description": "Reads up to the specified number of bytes from the stdout of the running process. Returns immediately with available data (non-blocking). Returns an empty string if no data is available.",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "size": {
+        "arguments": {
           "type": "integer",
-          "description": "The number of bytes to read from the socket"
+          "description": "Maximum number of bytes to read."
         }
       },
-      "required": [
-        "size"
-      ]
+      "required": ["arguments"]
     }
   },
   {
-    "name": "socket-write",
-    "description": "Write a sequence of bytes to the socket",
+    "name": "agent-proc-write",
+    "description": "Writes the specified string to the stdin of the running process.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "data": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 255
-          },
-          "description": "An array of byte values (integers between 0 and 255) to send"
-        }
-      },
-      "required": [
-        "data"
-      ]
-    }
-  },
-  {
-    "name": "socket-message",
-    "description": "This tool sends a message over the active socket connection.",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "arguments": {
           "type": "string",
-          "description": "The message content to be sent over the socket connection."
+          "description": "Data to write to the process's stdin."
+        },
+        "appendNewline": {
+          "type": "boolean",
+          "description": "When omitted or true, append a newline to the data before writing. When false, write the data unchanged."
         }
       },
-      "required": [
-        "arguments"
-      ]
+      "required": ["data"]
     }
   },
   {
-    "name": "socket-telnet",
-    "description": "A simple Telnet-like communication tool over raw TCP sockets. This tool connects to a specified host and port, sends and receives data, and removes any Telnet IAC (Interpret As Command) sequences from the communication stream. Note: This is a simplified Telnet implementation and does not support full Telnet protocol features.",
+    "name": "agent-proc-terminate",
+    "description": "Forcefully terminates the currently running process. Resets internal state so agent-proc-run can be called again.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-socket-open",
+    "description": "Opens a socket connection for subsequent agent-socket-read, agent-socket-write, agent-socket-read-byte, and agent-socket-write-byte operations. Specify either file for a Unix domain socket, or host and port for a TCP socket.",
     "inputSchema": {
       "type": "object",
       "properties": {
+        "file": {
+          "type": "string",
+          "description": "Unix domain socket path."
+        },
         "host": {
           "type": "string",
-          "description": "The hostname or IP address to connect to (e.g., '127.0.0.1' or 'localhost')."
+          "description": "TCP host name or IP address."
         },
         "port": {
           "type": "string",
-          "description": "The port number to connect to, provided as a string (e.g., '5000')."
+          "description": "TCP service name or port number."
+        }
+      }
+    }
+  },
+  {
+    "name": "agent-socket-close",
+    "description": "Closes the active agent socket connection.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-socket-read",
+    "description": "Reads up to the specified number of bytes from the active agent socket connection and returns the data as a UTF-8 string. Returns an empty string if no data is available before timeout.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "integer",
+          "description": "Maximum number of bytes to read."
         }
       },
-      "required": [
-        "host",
-        "port"
-      ]
+      "required": ["length"]
+    }
+  },
+  {
+    "name": "agent-socket-read-byte",
+    "description": "Reads up to the specified number of bytes from the active agent socket connection and returns the data as an uppercase hex string.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "integer",
+          "description": "Maximum number of bytes to read."
+        }
+      },
+      "required": ["length"]
+    }
+  },
+  {
+    "name": "agent-socket-write",
+    "description": "Writes the specified UTF-8 string to the active agent socket connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Text data to write to the socket."
+        },
+        "appendNewline": {
+          "type": "boolean",
+          "description": "When omitted or true, append a newline to the data before writing. When false, write the data unchanged."
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-socket-write-byte",
+    "description": "Decodes the specified hex string and writes the resulting bytes to the active agent socket connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Hex string to decode and write to the socket, for example 000A1BFF."
+        }
+      },
+      "required": ["data"]
     }
   },
 
   {
-    "name": "serial-open",
-    "description": "Opens a serial port connection to a specified device with a given baud rate. Commonly used to access on-premises hardware or network devices via console.",
+    "name": "agent-serial-open",
+    "description": "Opens a serial port connection for subsequent agent-serial-read, agent-serial-write, agent-serial-read-byte, and agent-serial-write-byte operations. Only one port can be active at a time.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "device": {
           "type": "string",
-          "description": "The path or name of the serial device. On Linux/macOS, use paths like /dev/ttyUSB0; on Windows, use names like COM3."
+          "description": "Serial device path, e.g. /dev/ttyUSB0 or COM3."
         },
-        "speed": {
+        "commSpeed": {
           "type": "integer",
-          "description": "Baud rate for communication (e.g., 9600, 115200). Must match the target device's configuration."
+          "description": "Baud rate, e.g. 9600 or 115200. Default: 9600."
+        },
+        "bitsPerWord": {
+          "type": "integer",
+          "description": "Data bits (5-8). Default: 8."
+        },
+        "stopb": {
+          "type": "integer",
+          "description": "Stop bits (1 or 2). Default: 1."
+        },
+        "parity": {
+          "type": "string",
+          "description": "Parity: \"NoParity\", \"Odd\", or \"Even\". Default: \"NoParity\"."
+        },
+        "flowControl": {
+          "type": "string",
+          "description": "Flow control: \"NoFlowControl\" or \"Software\". Default: \"NoFlowControl\"."
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Read timeout in tenths of a second. Default: 1."
         }
       },
-      "required": [
-        "device",
-        "speed"
-      ]
+      "required": ["device"]
     }
   },
   {
-    "name": "serial-close",
-    "description": "This tool close active serial connection that was previously established using the 'serial-open' tool.",
-    "inputSchema": {"type": "object"}
+    "name": "agent-serial-close",
+    "description": "Closes the active serial port connection.",
+    "inputSchema": { "type": "object" }
   },
   {
-    "name": "serial-read",
-    "description": "Reads the specified number of bytes from the serial. The 'size' parameter indicates how many bytes to read.",
+    "name": "agent-serial-read",
+    "description": "Reads up to the specified number of bytes from the active serial port and returns the data as a UTF-8 string. Returns an empty string if no data is available before timeout.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "size": {
           "type": "integer",
-          "description": "The number of bytes to read from the serial"
+          "description": "Maximum number of bytes to read."
         }
       },
-      "required": [
-        "size"
-      ]
+      "required": ["size"]
     }
   },
   {
-    "name": "serial-write",
-    "description": "Write a sequence of bytes to the serial",
+    "name": "agent-serial-read-byte",
+    "description": "Reads up to the specified number of bytes from the active serial port and returns the data as an uppercase hex string (e.g. FF0A1B41).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "integer",
+          "description": "Maximum number of bytes to read."
+        }
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "agent-serial-write",
+    "description": "Writes the specified UTF-8 string to the active serial port.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "data": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 255
-          },
-          "description": "An array of byte values (integers between 0 and 255) to send"
+          "type": "string",
+          "description": "Text data to write to the serial port."
+        },
+        "appendNewline": {
+          "type": "boolean",
+          "description": "When omitted or true, append a newline to the data before writing. When false, write the data unchanged."
         }
       },
-      "required": [
-        "data"
-      ]
+      "required": ["data"]
     }
   },
   {
-    "name": "serial-message",
-    "description": "This tool sends a specified string to the active socket connection, then waits for a recognizable prompt from the remote side. Upon detecting the prompt, it captures and returns all output received prior to it.",
+    "name": "agent-serial-write-byte",
+    "description": "Decodes the specified hex string and writes the resulting bytes to the active serial port. Accepts uppercase or lowercase hex, e.g. FF0A1BFF or 000a1bff.",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "arguments": {
+        "data": {
           "type": "string",
-          "description": "The message content to be sent over the serial connection."
+          "description": "Hex string to decode and write to the serial port, for example 000A1BFF."
         }
       },
-      "required": [
-        "arguments"
-      ]
+      "required": ["data"]
     }
   },
+
+  
   {
     "name": "pms-list-dir",
     "description": "List the contents of a directory at the specified path.",
@@ -1236,9 +1383,7 @@ const winToolsListContent = `\
           "description": "The filesystem path of the directory whose contents should be listed."
         }
       },
-      "required": [
-        "path"
-      ]
+      "required": ["path"]
     }
   },
   {
@@ -1252,25 +1397,29 @@ const winToolsListContent = `\
           "description": "The filesystem path of the directory to create."
         }
       },
-      "required": [
-        "path"
-      ]
+      "required": ["path"]
     }
-  },  
+  },
   {
     "name": "pms-read-file",
-    "description": "Read the contents of a file at the specified path.",
+    "description": "Read the contents of a file at the specified path. Optionally specify startLine/endLine (1-based, inclusive) to read only a partial range of lines.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "path": {
           "type": "string",
           "description": "The filesystem path of the file to read."
+        },
+        "startLine": {
+          "type": "integer",
+          "description": "First line to read (1-based, inclusive). Omit to start from the beginning of the file."
+        },
+        "endLine": {
+          "type": "integer",
+          "description": "Last line to read (1-based, inclusive). Omit to read to the end of the file. Clamped to actual line count if exceeded."
         }
       },
-      "required": [
-        "path"
-      ]
+      "required": ["path"]
     }
   },
   {
@@ -1288,13 +1437,396 @@ const winToolsListContent = `\
           "description": "The contents to write to the file."
         }
       },
-      "required": [
-        "path",
-        "contents"
-      ]
+      "required": ["path", "contents"]
+    }
+  },
+  {
+    "name": "pms-file-info",
+    "description": "Return basic metadata for a file: total line count and byte size. Use this before pms-read-file to understand the file's scale, and use the line count with pms-read-file partial-read to avoid loading more than necessary.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to inspect."
+        }
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-grep-file",
+    "description": "Search a file for lines matching a POSIX extended regular expression. Returns a JSON array of hit objects, each with: 'line' (1-based line number), 'text' (full content of the matching line), and 'cols' (array of 1-based column offsets where the pattern matches within that line). Returns an empty array when no lines match. Use the returned line numbers with pms-read-file partial-read to efficiently retrieve surrounding context.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to search."
+        },
+        "pattern": {
+          "type": "string",
+          "description": "POSIX extended regular expression pattern to search for."
+        }
+      },
+      "required": ["path", "pattern"]
+    }
+  },
+  {
+    "name": "pms-replace-file",
+    "description": "Replace literal text in a file. Each replacement is applied in order, and every occurrence of oldText found at that step is replaced with newText. This is not a regular expression replacement.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to update."
+        },
+        "replacements": {
+          "type": "array",
+          "description": "Replacement rules applied in order. For each rule, all occurrences of oldText are replaced with newText.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {
+                "type": "string",
+                "description": "Literal text to search for. Must be non-empty. All occurrences are replaced."
+              },
+              "newText": {
+                "type": "string",
+                "description": "Text to write in place of every matching oldText occurrence."
+              }
+            },
+            "required": ["oldText", "newText"]
+          }
+        }
+      },
+      "required": ["path", "replacements"]
+    }
+  },
+  {
+    "name": "pms-patch-file",
+    "description": "Apply a unified diff patch to a file at the specified path. The patch must be in unified diff format (e.g., @@ -1,3 +1,3 @@). On success, returns the path of the patched file. On failure, returns an error message such as HunkMismatch. NOTE: When using multiple hunks, each hunk's line numbers (both - and + sides) must account for the cumulative line count delta (additions minus deletions) of all preceding hunks.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filesystem path of the file to patch."
+        },
+        "patch": {
+          "type": "string",
+          "description": "The unified diff patch string to apply. Example: \"@@ -1,3 +1,3 @@\\n context\\n-old line\\n+new line\\n context\\n\""
+        }
+      },
+      "required": ["path", "patch"]
+    }
+  },
+
+  {
+    "name": "socket-open",
+    "description": "This tool initiates a socket connection to the specified host and port. (Deprecated: This tool is duplicated by agent-socket-open, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The hostname or IP address to connect to (e.g., '127.0.0.1' or 'localhost')."
+        },
+        "port": {
+          "type": "string",
+          "description": "The port number to connect to, provided as a string (e.g., '5000')."
+        }
+      },
+      "required": ["host", "port"]
+    }
+  },
+  {
+    "name": "socket-close",
+    "description": "This tool close active socket connection that was previously established using the 'socket-open' tool. (Deprecated: This tool is duplicated by agent-socket-close, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "socket-read",
+    "description": "Reads the specified number of bytes from the socket. The 'size' parameter indicates how many bytes to read. (Deprecated: This tool is duplicated by agent-socket-read-byte, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "integer",
+          "description": "The number of bytes to read from the socket"
+        }
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "socket-write",
+    "description": "Write a sequence of bytes to the socket. (Deprecated: This tool is duplicated by agent-socket-write-byte, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "description": "An array of byte values (integers between 0 and 255) to send"
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "socket-message",
+    "description": "This tool sends a message over the active socket connection. (Deprecated: This tool is duplicated by agent-socket-write, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "The message content to be sent over the socket connection."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "socket-telnet",
+    "description": "A simple Telnet-like communication tool over raw TCP sockets. This tool connects to a specified host and port, sends and receives data, and removes any Telnet IAC (Interpret As Command) sequences from the communication stream. Note: This is a simplified Telnet implementation and does not support full Telnet protocol features. (Deprecated: This tool is duplicated by agent-socket-open, agent-socket-read-byte, and agent-socket-write-byte, which provide equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The hostname or IP address to connect to (e.g., '127.0.0.1' or 'localhost')."
+        },
+        "port": {
+          "type": "string",
+          "description": "The port number to connect to, provided as a string (e.g., '5000')."
+        }
+      },
+      "required": ["host", "port"]
+    }
+  },
+
+  {
+    "name": "serial-open",
+    "description": "Opens a serial port connection to a specified device with a given baud rate. Commonly used to access on-premises hardware or network devices via console. (Deprecated: This tool is duplicated by agent-serial-open, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "type": "string",
+          "description": "The path or name of the serial device. On Linux/macOS, use paths like /dev/ttyUSB0; on Windows, use names like COM3."
+        },
+        "speed": {
+          "type": "integer",
+          "description": "Baud rate for communication (e.g., 9600, 115200). Must match the target device's configuration."
+        }
+      },
+      "required": ["device", "speed"]
+    }
+  },
+  {
+    "name": "serial-close",
+    "description": "This tool close active serial connection that was previously established using the 'serial-open' tool. (Deprecated: This tool is duplicated by agent-serial-close, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "serial-read",
+    "description": "Reads the specified number of bytes from the serial. The 'size' parameter indicates how many bytes to read. (Deprecated: This tool is duplicated by agent-serial-read-byte, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "integer",
+          "description": "The number of bytes to read from the serial"
+        }
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "serial-write",
+    "description": "Write a sequence of bytes to the serial. (Deprecated: This tool is duplicated by agent-serial-write-byte, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "description": "An array of byte values (integers between 0 and 255) to send"
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "serial-message",
+    "description": "This tool sends a specified string to the active serial connection, then waits for a recognizable prompt from the remote side. Upon detecting the prompt, it captures and returns all output received prior to it. (Deprecated: This tool is duplicated by agent-serial-write and agent-serial-read, which provide equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "The message content to be sent over the serial connection."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+
+  {
+    "name": "proc-cmd",
+    "description": "The 'proc-cmd' tool launches the Windows Command Prompt ('cmd.exe') as a subprocess. It allows the AI to interact with the standard Windows shell environment, enabling execution of batch commands, file operations, and system configuration tasks in a familiar terminal interface. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "proc-ps",
+    "description": "'proc-ps' launches the Windows PowerShell ('powershell.exe') as a subprocess. It provides an interactive command-line environment where the AI can execute PowerShell commands, scripts, and system administration tasks. The shell is started with default options to keep it open and ready for further input. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "proc-ssh",
+    "description": "'proc-ssh' launches an SSH client ('ssh') as a subprocess using 'runProcess'. It enables the AI to initiate remote connections to other systems via the Secure Shell protocol. The tool can be used to execute remote commands, access remote shells, or tunnel services over SSH. The required 'arguments' field allows specifying the target user, host, and any SSH options (e.g., '-p', '-i', '-L'). (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Arguments to be passed to the SSH command, such as user, host, and optional flags."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-telnet",
+    "description": "A tool that runs Telnet sessions by internally using PuTTY's plink executable. This enables interactive Telnet connections on Windows without requiring an external pseudo-terminal emulator like winpty. Users supply the Telnet command arguments, which are passed directly to plink to establish the session. (Note: plink.exe must be available in the system PATH.) (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command-line arguments to be passed to plink for establishing the Telnet connection, such as hostname and port."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-plink",
+    "description": "A Windows tool that launches an interactive console application via plink, a command-line SSH and Telnet client. Suitable for executing SSH or Telnet sessions directly without needing an external PTY emulator. (Note: plink.exe must be available in the system PATH.) (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Command-line arguments passed to plink. For example, use ['-telnet', 'hostname'] to start a telnet session, or ['-ssh', 'user@hostname'] to start an SSH session."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-spawn",
+    "description": "Spawns an external process using the specified arguments and enables interactive communication via standard input and output. Unlike PTY-based execution, this communicates directly with the process using the runProcess function without allocating a pseudo-terminal. Suitable for non-TUI, stdin/stdout-based interactive programs. (Note: This tool is duplicated by agent-proc-run, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Name of the command to run."
+        },
+        "arguments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of arguments for the command."
+        }
+      },
+      "required": ["command"]
+    }
+  },
+  {
+    "name": "proc-message",
+    "description": "Sends structured text-based instructions or commands to a subprocess started with runProcess. It provides a programmable interface for interacting with the process via standard input. (Note: This tool is duplicated by agent-proc-write, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "df -k"
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-read",
+    "description": "Reads available output from the active PTY session without blocking. If no data is available, returns an empty string. (Note: This tool is duplicated by agent-proc-read, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "integer",
+          "description": "The maximum number of bytes to read."
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-write",
+    "description": "Writes input data to the active PTY session and returns immediately without waiting for completion. (Note: This tool is duplicated by agent-proc-write, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "Data to write to the PTY session, e.g., 'ls -l\\n'"
+        }
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-terminate",
+    "description": "Forcefully terminates a running process created via runProcess. (Note: This tool is duplicated by agent-proc-terminate, which provides equivalent functionality with a more agent-friendly interface.)",
+    "inputSchema": {"type": "object"}
+  },
+
+  {
+    "name": "pms_ping",
+    "description": "Sends ICMP echo requests to a specified host to check network connectivity and measure response times.(linux-only)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {
+          "type": "string",
+          "description": "The target host or IP address, along with optional ping command arguments (e.g., '-c 4 www.google.com')."
+        }
+      },
+      "required": ["arguments"]
     }
   }
-
 ]
 
 `;
