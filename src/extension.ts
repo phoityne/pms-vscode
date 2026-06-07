@@ -511,6 +511,99 @@ const defaultToolsListContent = `\
     }
   },
 
+
+  {
+    "name": "agent-server-listen",
+    "description": "Binds to the specified host and port, starts listening for incoming TCP connections, and launches a background accept thread. Only one listener can be active at a time. Returns immediately after the socket is bound and listening.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "string",
+          "description": "TCP port number or service name to listen on, e.g. \"8080\"."
+        },
+        "host": {
+          "type": "string",
+          "description": "Host address to bind to. Defaults to 127.0.0.1 if omitted."
+        }
+      },
+      "required": ["port"]
+    }
+  },
+  {
+    "name": "agent-server-close",
+    "description": "Closes the active accepted connection and/or the listening socket. Stops the background accept thread. After this call, agent-server-listen can be called again.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "description": "Optional close target. Omit to close everything (connection + listener)."
+        }
+      }
+    }
+  },
+  {
+    "name": "agent-server-status",
+    "description": "Returns the current server status: whether the server is listening, whether a client is connected, and the bound listen address.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-server-events",
+    "description": "Dequeues and returns server-side events accumulated since the last call (e.g. ClientConnected, ClientDisconnected, BytesReceived, ErrorOccurred). Useful for polling connection state changes.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "maxEvents": {
+          "type": "integer",
+          "description": "Maximum number of events to return. Returns all queued events if omitted."
+        }
+      }
+    }
+  },
+  {
+    "name": "agent-server-read",
+    "description": "Dequeues exactly 1 received chunk from the connection receive queue and returns it as a UTF-8 string. Returns an empty string if no data is available before timeout.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-server-write",
+    "description": "Writes the specified UTF-8 string to the active accepted connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Text data to write to the accepted connection."
+        },
+        "appendNewline": {
+          "type": "boolean",
+          "description": "When omitted or true, append a newline before writing. When false, write the data unchanged."
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-server-read-byte",
+    "description": "Dequeues exactly 1 received chunk from the connection receive queue and returns it as an uppercase hex string (e.g. FF0A1B41). Returns an empty string if no data is available before timeout.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-server-write-byte",
+    "description": "Decodes the specified hex string and writes the resulting bytes to the active accepted connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Hex string to decode and write, e.g. 48454C4C4F0A."
+        }
+      },
+      "required": ["data"]
+    }
+  },
+
   
   {
     "name": "pms-list-dir",
@@ -1371,6 +1464,98 @@ const winToolsListContent = `\
     }
   },
 
+
+  {
+    "name": "agent-server-listen",
+    "description": "Binds to the specified host and port, starts listening for incoming TCP connections, and launches a background accept thread. Only one listener can be active at a time. Returns immediately after the socket is bound and listening.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "string",
+          "description": "TCP port number or service name to listen on, e.g. \"8080\"."
+        },
+        "host": {
+          "type": "string",
+          "description": "Host address to bind to. Defaults to 127.0.0.1 if omitted."
+        }
+      },
+      "required": ["port"]
+    }
+  },
+  {
+    "name": "agent-server-close",
+    "description": "Closes the active accepted connection and/or the listening socket. Stops the background accept thread. After this call, agent-server-listen can be called again.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "description": "Optional close target. Omit to close everything (connection + listener)."
+        }
+      }
+    }
+  },
+  {
+    "name": "agent-server-status",
+    "description": "Returns the current server status: whether the server is listening, whether a client is connected, and the bound listen address.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-server-events",
+    "description": "Dequeues and returns server-side events accumulated since the last call (e.g. ClientConnected, ClientDisconnected, BytesReceived, ErrorOccurred). Useful for polling connection state changes.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "maxEvents": {
+          "type": "integer",
+          "description": "Maximum number of events to return. Returns all queued events if omitted."
+        }
+      }
+    }
+  },
+  {
+    "name": "agent-server-read",
+    "description": "Dequeues exactly 1 received chunk from the connection receive queue and returns it as a UTF-8 string. Returns an empty string if no data is available before timeout.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-server-write",
+    "description": "Writes the specified UTF-8 string to the active accepted connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Text data to write to the accepted connection."
+        },
+        "appendNewline": {
+          "type": "boolean",
+          "description": "When omitted or true, append a newline before writing. When false, write the data unchanged."
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-server-read-byte",
+    "description": "Dequeues exactly 1 received chunk from the connection receive queue and returns it as an uppercase hex string (e.g. FF0A1B41). Returns an empty string if no data is available before timeout.",
+    "inputSchema": { "type": "object" }
+  },
+  {
+    "name": "agent-server-write-byte",
+    "description": "Decodes the specified hex string and writes the resulting bytes to the active accepted connection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Hex string to decode and write, e.g. 48454C4C4F0A."
+        }
+      },
+      "required": ["data"]
+    }
+  },
   
   {
     "name": "pms-list-dir",
