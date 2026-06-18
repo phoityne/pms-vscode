@@ -252,6 +252,7 @@ invalidCmds:
   - restart
   - reboot
   - shutdown
+timeoutMicrosec: 30000000
   
 `;
 
