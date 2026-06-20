@@ -1,0 +1,61 @@
+logDir : "pty-mcp-server/logs"
+logLevel : "Debug"
+toolsDir : "pty-mcp-server/tools"
+promptsDir : "pty-mcp-server/prompts"
+resourcesDir : "pty-mcp-server/resources"
+sandboxDir : "pty-mcp-server/sandbox"
+agentAllowedCmds:
+  - cmd
+  - cmd.exe
+  - powershell
+  - powershell.exe
+  - bash
+  - /bin/bash
+sandboxNetworks:
+#  - 10.0.0.0/8
+#  - 172.16.0.0/12
+  - 192.168.0.0/16
+invalidPatterns:
+  - 'del\s'
+  - 'erase\s'
+  - 'rmdir\s'
+  - 'rm\s'
+  - 'format\s'
+  - 'kill\s'
+  - taskkill
+  - su
+  - sudo
+  - restart
+  - reboot
+  - shutdown
+  - '.*ssh.*'
+  - '.*telnet.*'
+prompts:
+  - '>>>'
+  - '...'
+  - ']#'
+  - ']$'
+  - ')?'
+  - 'Password:'
+  - 'password:'
+  - 'ghci>'
+  - '--More--'
+  - '(END)'
+invalidChars:
+  - '&&'
+  - '||'
+  - '..'
+invalidCmds:
+  - del
+  - erase
+  - rmdir
+  - rm
+  - format
+  - kill
+  - taskkill
+  - su
+  - sudo
+  - restart
+  - reboot
+  - shutdown
+  

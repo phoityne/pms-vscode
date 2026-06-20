@@ -1,0 +1,8 @@
+[
+  {
+    "name": "pms_readme",
+    "uri": "file:///pms_readme.md",
+    "description": "pty-mcp-server overview, homepage URL, and GitHub URL.",
+    "mimeType": "text/markdown"
+  }
+]

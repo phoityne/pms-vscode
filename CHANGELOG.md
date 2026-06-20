@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.8]
+
+* Miscellaneous updates and preparations for the `pty-mcp-server-0.2.2` release.
+
 ## [0.1.7]
 
 * Added pms-infra-agent-server.

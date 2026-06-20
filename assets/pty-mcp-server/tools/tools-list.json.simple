@@ -1,0 +1,680 @@
+[
+  {
+    "name": "agent-proc-run",
+    "description": "Spawn external process; stdin/stdout connected for agent-proc-read/write. One process at a time.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {"type": "string"},
+        "arguments": {"type": "array", "items": {"type": "string"}},
+        "environment": {"type": "object", "additionalProperties": {"type": "string"}}
+      },
+      "required": ["command"]
+    }
+  },
+  {
+    "name": "agent-proc-read",
+    "description": "Non-blocking read from process stdout. Returns empty string if no data.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "integer", "description": "Max bytes to read."}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "agent-proc-write",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {"type": "string"},
+        "appendNewline": {"type": "boolean", "description": "Default true. False to write as-is."}
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-proc-terminate",
+    "description": "Kill running process. Resets state so agent-proc-run can be called again.",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "agent-socket-open",
+    "description": "Open socket. Use file for Unix domain socket, or host+port for TCP.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {"type": "string"},
+        "host": {"type": "string"},
+        "port": {"type": "string"}
+      }
+    }
+  },
+  {
+    "name": "agent-socket-close",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "agent-socket-read",
+    "description": "Read from socket as UTF-8. Returns empty string on timeout.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "length": {"type": "integer", "description": "Max bytes to read."}
+      },
+      "required": ["length"]
+    }
+  },
+  {
+    "name": "agent-socket-read-byte",
+    "description": "Read from socket; returns uppercase hex string.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "length": {"type": "integer", "description": "Max bytes to read."}
+      },
+      "required": ["length"]
+    }
+  },
+  {
+    "name": "agent-socket-write",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {"type": "string"},
+        "appendNewline": {"type": "boolean", "description": "Default true. False to write as-is."}
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-socket-write-byte",
+    "description": "Decode hex string and write bytes to socket. e.g. 000A1BFF.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {"type": "string"}
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-serial-open",
+    "description": "Open serial port. One port at a time.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "device": {"type": "string", "description": "e.g. /dev/ttyUSB0 or COM3."},
+        "commSpeed": {"type": "integer", "description": "Baud rate. Default: 9600."},
+        "bitsPerWord": {"type": "integer", "description": "Data bits (5-8). Default: 8."},
+        "stopb": {"type": "integer", "description": "Stop bits (1 or 2). Default: 1."},
+        "parity": {"type": "string", "description": "NoParity|Odd|Even. Default: NoParity."},
+        "flowControl": {"type": "string", "description": "NoFlowControl|Software. Default: NoFlowControl."},
+        "timeout": {"type": "integer", "description": "Read timeout in tenths of a second. Default: 1."}
+      },
+      "required": ["device"]
+    }
+  },
+  {
+    "name": "agent-serial-close",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "agent-serial-read",
+    "description": "Read from serial port as UTF-8. Returns empty string on timeout.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {"type": "integer", "description": "Max bytes to read."}
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "agent-serial-read-byte",
+    "description": "Read from serial port; returns uppercase hex string. e.g. FF0A1B41.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {"type": "integer", "description": "Max bytes to read."}
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "agent-serial-write",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {"type": "string"},
+        "appendNewline": {"type": "boolean", "description": "Default true. False to write as-is."}
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-serial-write-byte",
+    "description": "Decode hex string (upper or lower) and write bytes to serial port. e.g. 000A1BFF.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {"type": "string"}
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-server-listen",
+    "description": "Bind and listen for TCP. One listener at a time. Returns immediately after bind.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "port": {"type": "string"},
+        "host": {"type": "string", "description": "Default: 127.0.0.1."}
+      },
+      "required": ["port"]
+    }
+  },
+  {
+    "name": "agent-server-close",
+    "description": "Close accepted connection and/or listener. Omit target to close both.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "target": {"type": "string"}
+      }
+    }
+  },
+  {
+    "name": "agent-server-status",
+    "description": "Returns listening status, client connection state, and bound address.",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "agent-server-events",
+    "description": "Dequeue server-side events since last call (ClientConnected, ClientDisconnected, BytesReceived, ErrorOccurred).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "maxEvents": {"type": "integer", "description": "Omit for all queued events."}
+      }
+    }
+  },
+  {
+    "name": "agent-server-read",
+    "description": "Dequeue 1 received chunk as UTF-8. Returns empty string on timeout.",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "agent-server-write",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {"type": "string"},
+        "appendNewline": {"type": "boolean", "description": "Default true. False to write as-is."}
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "agent-server-read-byte",
+    "description": "Dequeue 1 received chunk as uppercase hex string. Returns empty string on timeout.",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "agent-server-write-byte",
+    "description": "Decode hex string and write bytes to accepted connection. e.g. 48454C4C4F0A.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {"type": "string"}
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "pms-list-dir",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"}
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-make-dir",
+    "description": "Create directory including missing parents.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"}
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-read-file",
+    "description": "Read file. Optionally specify startLine/endLine (1-based, inclusive) for partial read.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"},
+        "startLine": {"type": "integer"},
+        "endLine": {"type": "integer"}
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-write-file",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"},
+        "contents": {"type": "string"}
+      },
+      "required": ["path", "contents"]
+    }
+  },
+  {
+    "name": "pms-file-info",
+    "description": "Return file line count and byte size. Use before pms-read-file to plan partial reads.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"}
+      },
+      "required": ["path"]
+    }
+  },
+  {
+    "name": "pms-grep-file",
+    "description": "Search file with POSIX ERE. Returns array of {line, text, cols}.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"},
+        "pattern": {"type": "string"}
+      },
+      "required": ["path", "pattern"]
+    }
+  },
+  {
+    "name": "pms-replace-file",
+    "description": "Literal text replacement in file. Each rule replaces all occurrences of oldText with newText, applied in order.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"},
+        "replacements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "oldText": {"type": "string"},
+              "newText": {"type": "string"}
+            },
+            "required": ["oldText", "newText"]
+          }
+        }
+      },
+      "required": ["path", "replacements"]
+    }
+  },
+  {
+    "name": "pms-patch-file",
+    "description": "Apply unified diff patch. Multi-hunk line numbers must account for cumulative delta of preceding hunks.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"},
+        "patch": {"type": "string", "description": "e.g. \"@@ -1,3 +1,3 @@\\n context\\n-old\\n+new\\n context\\n\""}
+      },
+      "required": ["path", "patch"]
+    }
+  },
+  {
+    "name": "pms-cmd-tree",
+    "description": "Show directory tree. Format: '<path> [depth] [dir|all]' (Linux/Mac) or '<path> [dir|all]' (Windows, depth unsupported).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "string"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "pms-cmd-move",
+    "description": "Move/rename file or directory. Format: '<src> <dst>'.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "string"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "pms-cmd-copy",
+    "description": "Recursively copy file or directory (cp -pr). Format: '<src> <dst>'.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "string"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "socket-open",
+    "description": "Deprecated. Use agent-socket-open.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "host": {"type": "string"},
+        "port": {"type": "string"}
+      },
+      "required": ["host", "port"]
+    }
+  },
+  {
+    "name": "socket-close",
+    "description": "Deprecated. Use agent-socket-close.",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "socket-read",
+    "description": "Deprecated. Use agent-socket-read-byte.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {"type": "integer"}
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "socket-write",
+    "description": "Deprecated. Use agent-socket-write-byte.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0, "maximum": 255}
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "socket-message",
+    "description": "Deprecated. Use agent-socket-write.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "string"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "socket-telnet",
+    "description": "Deprecated. Use agent-socket-open + agent-socket-read-byte + agent-socket-write-byte.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "host": {"type": "string"},
+        "port": {"type": "string"}
+      },
+      "required": ["host", "port"]
+    }
+  },
+  {
+    "name": "serial-open",
+    "description": "Deprecated. Use agent-serial-open.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "device": {"type": "string"},
+        "speed": {"type": "integer"}
+      },
+      "required": ["device", "speed"]
+    }
+  },
+  {
+    "name": "serial-close",
+    "description": "Deprecated. Use agent-serial-close.",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "serial-read",
+    "description": "Deprecated. Use agent-serial-read-byte.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "size": {"type": "integer"}
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "serial-write",
+    "description": "Deprecated. Use agent-serial-write-byte.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0, "maximum": 255}
+        }
+      },
+      "required": ["data"]
+    }
+  },
+  {
+    "name": "serial-message",
+    "description": "Deprecated. Use agent-serial-write + agent-serial-read.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "string"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "pty-bash",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "pty-ssh",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "pty-telnet",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "pty-cabal",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectDir": {"type": "string"},
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["projectDir"]
+    }
+  },
+  {
+    "name": "pty-stack",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectDir": {"type": "string"},
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["projectDir"]
+    }
+  },
+  {
+    "name": "pty-ghci",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectDir": {"type": "string"},
+        "startupFile": {"type": "string", "description": "Full absolute path to Haskell entry point."},
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["projectDir"]
+    }
+  },
+  {
+    "name": "pty-connect",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {"type": "string"},
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["command"]
+    }
+  },
+  {
+    "name": "pty-message",
+    "description": "Deprecated. Use agent-proc-write.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "string"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "pty-terminate",
+    "description": "Deprecated. Use agent-proc-terminate.",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "proc-cmd",
+    "description": "Deprecated. Use agent-proc-run (command: cmd.exe).",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "proc-ps",
+    "description": "Deprecated. Use agent-proc-run (command: powershell.exe).",
+    "inputSchema": {"type": "object"}
+  },
+  {
+    "name": "proc-ssh",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-telnet",
+    "description": "Deprecated. Use agent-proc-run. (Requires plink.exe in PATH.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-plink",
+    "description": "Deprecated. Use agent-proc-run. (Requires plink.exe in PATH.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-spawn",
+    "description": "Deprecated. Use agent-proc-run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "command": {"type": "string"},
+        "arguments": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["command"]
+    }
+  },
+  {
+    "name": "proc-message",
+    "description": "Deprecated. Use agent-proc-write.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "string"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-read",
+    "description": "Deprecated. Use agent-proc-read.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "integer"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-write",
+    "description": "Deprecated. Use agent-proc-write.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "arguments": {"type": "string"}
+      },
+      "required": ["arguments"]
+    }
+  },
+  {
+    "name": "proc-terminate",
+    "description": "Deprecated. Use agent-proc-terminate.",
+    "inputSchema": {"type": "object"}
+  }
+]

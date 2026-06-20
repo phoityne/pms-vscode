@@ -1,0 +1,34 @@
+[
+  {
+    "name": "skill_agent_server",
+    "description": "Start a TCP server and communicate with a remote AI agent client. Triggered by phrases like 'start the server', 'listen on port', or 'agent-server-listen'.",
+    "arguments": [
+      {
+        "name": "host",
+        "description": "Host address to bind the server (e.g. 0.0.0.0 or 127.0.0.1).",
+        "required": true
+      },
+      {
+        "name": "port",
+        "description": "Port number to listen on (e.g. 19999).",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "skill_agent_client",
+    "description": "Connect to a remote AI agent server as a TCP client and communicate. Triggered by phrases like 'connect to <host>:<port>', 'agent-socket-open', or 'connect to the AI server'.",
+    "arguments": [
+      {
+        "name": "host",
+        "description": "Host address of the server to connect to (e.g. 192.168.0.10).",
+        "required": true
+      },
+      {
+        "name": "port",
+        "description": "Port number of the server (e.g. 19999).",
+        "required": true
+      }
+    ]
+  }
+]
