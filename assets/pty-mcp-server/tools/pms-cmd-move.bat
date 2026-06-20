@@ -7,7 +7,7 @@ setlocal
 rem ROOT_DIR is auto-resolved to one level above this script.
 rem To override, uncomment the next line and set your path.
 rem set "ROOT_DIR=C:\path\to\work"
-for %%R in ("%~dp0..") do set "ROOT_DIR=%%~fR"
+if not defined ROOT_DIR (for %%R in ("%~dp0..") do set "ROOT_DIR=%%~fR")
 
 for %%A in ("%~1") do set "SRC_FULL=%%~fA"
 for %%A in ("%~2") do set "DST_FULL=%%~fA"

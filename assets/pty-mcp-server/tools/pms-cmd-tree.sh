@@ -6,7 +6,7 @@
 # To override, uncomment the next line and set your path.
 # ROOT_DIR=/path/to/work
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-ROOT_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
+: "${ROOT_DIR:=$(cd "$SCRIPT_DIR/.." && pwd)}"
 
 PATH_ARG="${1:-$ROOT_DIR}"
 TARGET_FULL=$(realpath -m "$PATH_ARG")
